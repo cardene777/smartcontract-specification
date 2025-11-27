@@ -86,7 +86,7 @@ const config: Config = {
           label: 'トークンコントラクト',
           position: 'left',
           items: [
-            { to: '/api/ERC20', label: 'ERC20' },
+            { to: '/docs/contracts/ERC20', label: 'ERC20' },
           ],
         },
         {
@@ -104,7 +104,7 @@ const config: Config = {
           items: [
             {
               label: 'ERC20',
-              to: '/api/ERC20',
+              to: '/docs/contracts/ERC20',
             },
           ],
         },

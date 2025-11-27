@@ -574,8 +574,8 @@ The documentation site must **strictly follow** the UI specifications below.
 | Position | Element | Link Target |
 |----------|---------|-------------|
 | Left end | Logo + Project name | `/` |
-| Second | **Docs** | `/overview` (System overview) |
-| Third onwards | Category dropdown | `/api/{ContractName}` (specifications) |
+| Second | **Docs** | `/docs/intro` (Introduction page) |
+| Third onwards | Category dropdown | `/docs/contracts/{ContractName}` (contract documentation) |
 | Right end | GitHub | Repository URL |
 
 ### Page Structure
@@ -591,8 +591,8 @@ The documentation site must **strictly follow** the UI specifications below.
 
 | Element | Specification |
 |---------|---------------|
-| **Header left** | "Docs" → `/overview` (system overview page) |
-| **Header dropdown** | Category name → Link to each contract's **specification** |
+| **Header left** | "ドキュメント" → `/docs/intro` (introduction page) |
+| **Header dropdown** | Category name → Link to each contract's **documentation** (`/docs/contracts/{ContractName}`) |
 | **Hero** | Title + Subtitle only. **No** buttons |
 | **Category name** | **Centered** |
 | **Card** | Contract name + description + "View Specification" button |
@@ -696,20 +696,20 @@ const contractSpecs = [
         src: 'img/logo.svg',
       },
       items: [
-        // ① Left end: Docs → /overview
+        // ① Left end: Docs → /docs/intro
         {
-          to: '/overview',
-          label: 'Docs',
+          to: '/docs/intro',
+          label: 'ドキュメント',
           position: 'left',
         },
-        // ② Category dropdown → Link to specifications (/api/*)
+        // ② Category dropdown → Link to documentation (/docs/contracts/*)
         {
           type: 'dropdown',
           label: 'Category1',
           position: 'left',
           items: [
-            { to: '/api/Contract1', label: 'Contract1' },
-            { to: '/api/Contract2', label: 'Contract2' },
+            { to: '/docs/contracts/Contract1', label: 'Contract1' },
+            { to: '/docs/contracts/Contract2', label: 'Contract2' },
           ],
         },
         // Add other categories similarly
