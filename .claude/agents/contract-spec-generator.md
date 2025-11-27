@@ -285,10 +285,16 @@ docs/contract/{ContractName}/
 └── {ContractName}.swagger.json
 ```
 
+### Contract Documentation (Markdown)
+```
+docs-site/docs/contracts/{ContractName}.md
+```
+
 ### Documentation Site (Phase 2)
 ```
 docs-site/
-├── docs/contracts/{ContractName}.md
+├── docs/contracts/{ContractName}.md  ← Contract documentation
+├── specs/{ContractName}/             ← Copied OpenAPI specs
 ├── docusaurus.config.js
 ├── src/pages/index.tsx
 ├── src/pages/index.module.css
@@ -298,6 +304,233 @@ docs-site/
 ### GitHub Actions (Phase 3)
 ```
 .github/workflows/deploy-docs.yml
+```
+
+---
+
+## Contract Documentation Generation
+
+When building a documentation site, create individual Markdown documentation pages for each contract under `docs-site/docs/contracts/`.
+
+### Documentation Template
+
+Use the following format for each contract documentation file:
+
+```markdown
+---
+sidebar_position: {number}
+---
+
+# {ContractName}
+
+> **[📋 API仕様書を見る](/api/{ContractName})**
+
+## 概要
+
+{Contract overview description in Japanese}
+
+### 継承関係
+
+このコントラクトは以下のコントラクトを継承しています：
+
+- `{ParentContract1}`
+- `{ParentContract2}`
+
+## 主要機能
+
+### {Feature Name}
+
+{Feature description in Japanese}
+
+## 関数一覧
+
+<details>
+<summary><strong>定数 ({count})</strong></summary>
+
+| 関数名 | 説明 |
+|--------|------|
+| [`{CONSTANT_NAME}`](#{constant_name_lowercase}) | {Description} |
+
+### {CONSTANT_NAME}
+
+{Description in Japanese}
+
+**戻り値:**
+
+| 名前 | 型 | 説明 |
+|------|-----|------|
+| `result0` | `string` | {Return description} |
+
+---
+
+</details>
+
+<details>
+<summary><strong>変数 ({count})</strong></summary>
+
+| 関数名 | 説明 |
+|--------|------|
+| [`{variableName}`](#{variablename_lowercase}) | {Description} |
+
+### {variableName}
+
+{Description in Japanese}
+
+**戻り値:**
+
+| 名前 | 型 | 説明 |
+|------|-----|------|
+| `result0` | `string` | {Return description} |
+
+---
+
+</details>
+
+<details>
+<summary><strong>Mapping ({count})</strong></summary>
+
+| 関数名 | 説明 |
+|--------|------|
+| [`{mappingName}`](#{mappingname_lowercase}) | {Description} |
+
+### {mappingName}
+
+{Description in Japanese}
+
+**パラメータ:**
+
+| 名前 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| `{paramName}` | `any` | ✓ | {Parameter description} |
+
+**戻り値:**
+
+| 名前 | 型 | 説明 |
+|------|-----|------|
+| `result0` | `string` | {Return description} |
+
+---
+
+</details>
+
+<details>
+<summary><strong>読み取り関数 ({count})</strong></summary>
+
+| 関数名 | 説明 |
+|--------|------|
+| [`{functionName}`](#{functionname_lowercase}) | {Description} |
+
+### {functionName}
+
+{Description in Japanese}
+
+**パラメータ:**
+
+| 名前 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| `{paramName}` | `any` | ✓ | {Parameter description} |
+
+**戻り値:**
+
+| 名前 | 型 | 説明 |
+|------|-----|------|
+| `result0` | `string` | {Return description} |
+
+---
+
+</details>
+
+<details>
+<summary><strong>書き込み関数 ({count})</strong></summary>
+
+| 関数名 | 説明 |
+|--------|------|
+| [`{functionName}`](#{functionname_lowercase}) | {Description} |
+
+### {functionName}
+
+{Description in Japanese}
+
+**パラメータ:**
+
+| 名前 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| `{paramName}` | `any` | ✓ | {Parameter description} |
+
+**戻り値:**
+
+| 名前 | 型 | 説明 |
+|------|-----|------|
+| `result0` | `string` | {Return description} |
+
+**使用例:**
+
+\`\`\`solidity
+contract.{functionName}({params});
+\`\`\`
+
+---
+
+</details>
+
+<details>
+<summary><strong>イベント ({count})</strong></summary>
+
+### events/{EventName}
+
+{Event description in Japanese}
+
+---
+
+</details>
+
+<details>
+<summary><strong>エラー ({count})</strong></summary>
+
+| エラー名 | 説明 |
+|----------|------|
+| `errors/{ErrorName}` | {Error description in Japanese} |
+
+</details>
+```
+
+### Documentation Rules
+
+1. **Language**: All descriptions must be written in Japanese
+2. **Link to API Spec**: Always include the link `> **[📋 API仕様書を見る](/api/{ContractName})**` at the top
+3. **Collapsible Sections**: Use `<details>` tags to organize functions by category
+4. **Categories**: Organize functions into these sections (only include sections that have items):
+   - 定数 (Constants)
+   - 変数 (Variables)
+   - Mapping
+   - 読み取り関数 (Read Functions)
+   - 書き込み関数 (Write Functions)
+   - イベント (Events)
+   - エラー (Errors)
+5. **Count in Headers**: Include the count of items in each section header, e.g., `<strong>定数 (5)</strong>`
+6. **Tables**: Use markdown tables for parameters and return values
+7. **Required Marker**: Use `✓` to indicate required parameters
+8. **Anchor Links**: Use lowercase anchor links for function references
+9. **Usage Examples**: Include Solidity usage examples for write functions
+
+### Sidebar Configuration
+
+Update `docs-site/sidebars.ts` to include contract documentation:
+
+```typescript
+const sidebars: SidebarsConfig = {
+  docs: [
+    'intro',
+    {
+      type: 'category',
+      label: 'コントラクト',
+      items: [
+        'contracts/ERC20',
+        // Add other contracts
+      ],
+    },
+  ],
+};
 ```
 
 ---
