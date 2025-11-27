@@ -1,0 +1,44 @@
+/**
+ * Custom CSS for Docusaurus
+ *
+ * プライマリカラーなどはプロジェクトに合わせて調整してください。
+ */
+
+:root {
+  --ifm-color-primary: #1890ff;
+  --ifm-color-primary-dark: #1478d4;
+  --ifm-color-primary-darker: #1270c7;
+  --ifm-color-primary-darkest: #0f5ca4;
+  --ifm-color-primary-light: #3a9fff;
+  --ifm-color-primary-lighter: #4aa7ff;
+  --ifm-color-primary-lightest: #75bcff;
+  --ifm-code-font-size: 95%;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+html[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Card styles for homepage */
+.card {
+  background: var(--ifm-card-background-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-card-border-radius);
+  box-shadow: var(--ifm-global-shadow-lw);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+html[data-theme='dark'] .card {
+  border-color: var(--ifm-color-emphasis-300);
+}

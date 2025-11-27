@@ -1,0 +1,690 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC20 Solidity Interface",
+    "version": "1.0.0",
+    "description": "A specification expressing the ERC20 contract's Solidity interface in Swagger 2.0 format.\n\nThis contract inherits from the following contracts:\n\nContext, IERC20, IERC20Metadata, IERC20Errors.\n\nThis is an implementation of the ERC20 token standard. It provides the basic functionality for fungible tokens including transfers, allowances, and balance tracking."
+  },
+  "host": "example.com",
+  "basePath": "/",
+  "schemes": ["https"],
+  "tags": [
+    {
+      "name": "Read Functions",
+      "description": "Functions that retrieve information from the contract without modifying state."
+    },
+    {
+      "name": "Write Functions",
+      "description": "Functions that modify contract state."
+    },
+    {
+      "name": "Events"
+    },
+    {
+      "name": "Errors"
+    }
+  ],
+  "paths": {
+    "/name": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "name",
+        "description": "Returns the name of the token.\n\nThis is an ERC20Metadata standard function.",
+        "operationId": "name",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "The token name (Solidity: string)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": "MyToken"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/symbol": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "symbol",
+        "description": "Returns the symbol of the token, usually a shorter version of the name.\n\nThis is an ERC20Metadata standard function.",
+        "operationId": "symbol",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "The token symbol (Solidity: string)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": "MTK"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/decimals": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "decimals",
+        "description": "Returns the number of decimals used to get its user representation.\n\nFor example, if `decimals` equals `2`, a balance of `505` tokens should be displayed to a user as `5.05` (`505 / 10 ** 2`).\n\nTokens usually opt for a value of 18, imitating the relationship between Ether and Wei. This is the default value returned by this function.\n\nThis information is only used for display purposes and does not affect any arithmetic of the contract.",
+        "operationId": "decimals",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "The number of decimals (Solidity: uint8)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": 18
+              }
+            }
+          }
+        }
+      }
+    },
+    "/totalSupply": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "totalSupply",
+        "description": "Returns the total supply of tokens in existence.\n\nThis is an ERC20 standard function.",
+        "operationId": "totalSupply",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "The total token supply (Solidity: uint256)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": "1000000000000000000000000"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/balanceOf": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "balanceOf",
+        "description": "Returns the token balance of the specified account.\n\nThis is an ERC20 standard function.",
+        "operationId": "balanceOf",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The address to query the balance of (Solidity: address)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "The token balance (Solidity: uint256)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": "1000000000000000000"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/allowance": {
+      "get": {
+        "tags": ["Read Functions"],
+        "summary": "allowance",
+        "description": "Returns the remaining number of tokens that `spender` is allowed to spend on behalf of `owner` through transferFrom.\n\nThis is an ERC20 standard function.",
+        "operationId": "allowance",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The address that owns the tokens (Solidity: address)."
+          },
+          {
+            "name": "spender",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The address that is approved to spend the tokens (Solidity: address)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string",
+                  "description": "The remaining allowance (Solidity: uint256)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": "500000000000000000000"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfer": {
+      "post": {
+        "tags": ["Write Functions"],
+        "summary": "transfer",
+        "description": "Moves a `value` amount of tokens from the caller's account to `to`.\n\nReturns a boolean value indicating whether the operation succeeded.\n\nThis function may emit Transfer.\n\n**Requirements:**\n- `to` cannot be the zero address.\n- The caller must have a balance of at least `value`.",
+        "operationId": "transfer",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The recipient address (Solidity: address)."
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "The amount of tokens to transfer (Solidity: uint256)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "boolean",
+                  "description": "Returns true if the transfer succeeded (Solidity: bool)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": true
+              }
+            }
+          },
+          "500": {
+            "description": "List of errors that can occur in this function.\n\n・ERC20InvalidSender\n\n・ERC20InvalidReceiver\n\n・ERC20InsufficientBalance",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "ERC20InsufficientBalance",
+                "data": {
+                  "sender": "0x1234567890123456789012345678901234567890",
+                  "balance": "100",
+                  "needed": "1000"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/approve": {
+      "post": {
+        "tags": ["Write Functions"],
+        "summary": "approve",
+        "description": "Sets a `value` amount of tokens as the allowance of `spender` over the caller's tokens.\n\nReturns a boolean value indicating whether the operation succeeded.\n\nIf `value` is the maximum `uint256`, the allowance is not updated on transferFrom. This is semantically equivalent to an infinite approval.\n\nThis function may emit Approval.\n\n**Requirements:**\n- `spender` cannot be the zero address.",
+        "operationId": "approve",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "spender",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The address to approve for spending tokens (Solidity: address)."
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "The amount of tokens to approve (Solidity: uint256)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "boolean",
+                  "description": "Returns true if the approval succeeded (Solidity: bool)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": true
+              }
+            }
+          },
+          "500": {
+            "description": "List of errors that can occur in this function.\n\n・ERC20InvalidApprover\n\n・ERC20InvalidSpender",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "ERC20InvalidSpender",
+                "data": {
+                  "spender": "0x0000000000000000000000000000000000000000"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transferFrom": {
+      "post": {
+        "tags": ["Write Functions"],
+        "summary": "transferFrom",
+        "description": "Moves a `value` amount of tokens from `from` to `to` using the allowance mechanism. `value` is then deducted from the caller's allowance.\n\nReturns a boolean value indicating whether the operation succeeded.\n\nDoes not update the allowance if the current allowance is the maximum `uint256`.\n\nThis function may emit Transfer.\n\n**Requirements:**\n- `from` and `to` cannot be the zero address.\n- `from` must have a balance of at least `value`.\n- The caller must have allowance for `from`'s tokens of at least `value`.",
+        "operationId": "transferFrom",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The address to transfer tokens from (Solidity: address)."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "The recipient address (Solidity: address)."
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "The amount of tokens to transfer (Solidity: uint256)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Response on successful completion.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "boolean",
+                  "description": "Returns true if the transfer succeeded (Solidity: bool)."
+                }
+              }
+            },
+            "examples": {
+              "application/json": {
+                "result": true
+              }
+            }
+          },
+          "500": {
+            "description": "List of errors that can occur in this function.\n\n・ERC20InvalidSender\n\n・ERC20InvalidReceiver\n\n・ERC20InsufficientBalance\n\n・ERC20InsufficientAllowance\n\n・ERC20InvalidApprover\n\n・ERC20InvalidSpender",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "ERC20InsufficientAllowance",
+                "data": {
+                  "spender": "0xabcdef1234567890abcdef1234567890abcdef12",
+                  "allowance": "100",
+                  "needed": "1000"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events/Transfer": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "Transfer",
+        "description": "Emitted when `value` tokens are moved from one account (`from`) to another (`to`).\n\nNote that `value` may be zero.\n\nThis is an ERC20 standard event.",
+        "operationId": "event_Transfer",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Event schema",
+            "schema": {
+              "$ref": "#/definitions/TransferEvent"
+            }
+          }
+        }
+      }
+    },
+    "/events/Approval": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "Approval",
+        "description": "Emitted when the allowance of a `spender` for an `owner` is set by a call to approve. `value` is the new allowance.\n\nThis is an ERC20 standard event.",
+        "operationId": "event_Approval",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Event schema",
+            "schema": {
+              "$ref": "#/definitions/ApprovalEvent"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InsufficientBalance": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InsufficientBalance",
+        "description": "Indicates an error related to the current balance of a sender. Used in transfers.",
+        "operationId": "error_ERC20InsufficientBalance",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InsufficientBalanceError"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidSender": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InvalidSender",
+        "description": "Indicates a failure with the token sender. Used in transfers.",
+        "operationId": "error_ERC20InvalidSender",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InvalidSenderError"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidReceiver": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InvalidReceiver",
+        "description": "Indicates a failure with the token receiver. Used in transfers.",
+        "operationId": "error_ERC20InvalidReceiver",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InvalidReceiverError"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InsufficientAllowance": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InsufficientAllowance",
+        "description": "Indicates a failure with the spender's allowance. Used in transfers.",
+        "operationId": "error_ERC20InsufficientAllowance",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InsufficientAllowanceError"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidApprover": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InvalidApprover",
+        "description": "Indicates a failure with the approver of a token to be approved. Used in approvals.",
+        "operationId": "error_ERC20InvalidApprover",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InvalidApproverError"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidSpender": {
+      "get": {
+        "tags": ["Errors"],
+        "summary": "ERC20InvalidSpender",
+        "description": "Indicates a failure with the spender to be approved. Used in approvals.",
+        "operationId": "error_ERC20InvalidSpender",
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Error schema",
+            "schema": {
+              "$ref": "#/definitions/ERC20InvalidSpenderError"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "description": "Common schema for expressing error information during contract calls.",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Stores custom error name or revert/require message string as-is."
+        },
+        "data": {
+          "type": "object",
+          "description": "Additional information (optional)."
+        }
+      }
+    },
+    "TransferEvent": {
+      "type": "object",
+      "description": "Emitted when tokens are transferred, including zero value transfers.",
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "indexed: true. The address tokens are transferred from (Solidity: address)."
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "indexed: true. The address tokens are transferred to (Solidity: address)."
+        },
+        "value": {
+          "type": "string",
+          "description": "indexed: false. The amount of tokens transferred (Solidity: uint256)."
+        }
+      }
+    },
+    "ApprovalEvent": {
+      "type": "object",
+      "description": "Emitted when the allowance of a spender for an owner is set.",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "indexed: true. The address that owns the tokens (Solidity: address)."
+        },
+        "spender": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "indexed: true. The address that is approved to spend (Solidity: address)."
+        },
+        "value": {
+          "type": "string",
+          "description": "indexed: false. The new allowance amount (Solidity: uint256)."
+        }
+      }
+    },
+    "ERC20InsufficientBalanceError": {
+      "type": "object",
+      "description": "Indicates an error related to the current balance of a sender.",
+      "properties": {
+        "sender": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The address with insufficient balance (Solidity: address)."
+        },
+        "balance": {
+          "type": "string",
+          "description": "The current balance (Solidity: uint256)."
+        },
+        "needed": {
+          "type": "string",
+          "description": "The required balance (Solidity: uint256)."
+        }
+      }
+    },
+    "ERC20InvalidSenderError": {
+      "type": "object",
+      "description": "Indicates a failure with the token sender.",
+      "properties": {
+        "sender": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The invalid sender address (Solidity: address)."
+        }
+      }
+    },
+    "ERC20InvalidReceiverError": {
+      "type": "object",
+      "description": "Indicates a failure with the token receiver.",
+      "properties": {
+        "receiver": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The invalid receiver address (Solidity: address)."
+        }
+      }
+    },
+    "ERC20InsufficientAllowanceError": {
+      "type": "object",
+      "description": "Indicates a failure with the spender's allowance.",
+      "properties": {
+        "spender": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The spender address with insufficient allowance (Solidity: address)."
+        },
+        "allowance": {
+          "type": "string",
+          "description": "The current allowance (Solidity: uint256)."
+        },
+        "needed": {
+          "type": "string",
+          "description": "The required allowance (Solidity: uint256)."
+        }
+      }
+    },
+    "ERC20InvalidApproverError": {
+      "type": "object",
+      "description": "Indicates a failure with the approver of a token.",
+      "properties": {
+        "approver": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The invalid approver address (Solidity: address)."
+        }
+      }
+    },
+    "ERC20InvalidSpenderError": {
+      "type": "object",
+      "description": "Indicates a failure with the spender to be approved.",
+      "properties": {
+        "spender": {
+          "type": "string",
+          "pattern": "^0x[0-9a-fA-F]{40}$",
+          "description": "The invalid spender address (Solidity: address)."
+        }
+      }
+    }
+  }
+}
