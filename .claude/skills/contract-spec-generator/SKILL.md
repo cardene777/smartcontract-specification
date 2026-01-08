@@ -1,799 +1,872 @@
 ---
 name: contract-spec-generator
-description: Generate OpenAPI 3.0 (YAML) and Swagger 2.0 (JSON) specifications from Solidity smart contracts using batch generation mode (skeleton script + AI enhancement) or single contract mode, with optional Docusaurus documentation site creation. This skill should be used when converting Solidity contract ABIs and source code into API documentation format, or when setting up a documentation website for blockchain smart contracts.
+description: Solidityスマートコントラクトから5フェーズパイプラインでOpenAPI 3.0（YAML）仕様書を生成します。コントラクト分析、中間表現生成、AI強化、品質検証、OpenAPI公開を経て、クライアント納品可能なAPI仕様書を作成します。
 ---
 
 # Contract Spec Generator
 
-## Overview
+5フェーズパイプライン（コントラクト分析、中間表現生成、AI強化、品質検証、OpenAPI公開）を通じて、SolidityスマートコントラクトからOpenAPI 3.0（YAML）仕様書を生成します。このスキルは、包括的な日本語ドキュメントを含むクライアント納品可能なAPI仕様書を作成します。
 
-This skill provides a two-phase workflow for creating comprehensive smart contract documentation:
+**出力**: 完全な関数説明、エラーケース、型マッピングを含むOpenAPI 3.0 YAMLファイル
 
-**Phase 1: Specification Generation**
-- Generate OpenAPI 3.0 (YAML) and Swagger 2.0 (JSON) specifications from Solidity contracts
-- Transform contract ABIs and source code into standardized API documentation format
-- Include all functions, events, errors, structs, and modifiers with detailed descriptions
-
-**Phase 2: Documentation Site Creation (Optional)**
-- Set up a Docusaurus-based documentation website with Redocusaurus plugin
-- Automatically register all generated specifications
-- Deploy-ready static site with interactive API documentation
-
-The generated specifications include:
-- All public/external functions (read and write operations)
-- State variables, mappings, and constants with auto-generated getters
-- Events and custom errors with detailed examples
-- Struct definitions with type mappings
-- Modifiers and their effects on functions
-- Comprehensive error handling with HTTP 500 responses
-- **Tag categorization** for UI grouping (Read Functions, Write Functions, Variables, Constants, Mapping, Events, Errors, Structs, Modifier)
-
-## When to Use This Skill
-
-Use this skill when:
-- Generating documentation for Solidity smart contracts
-- Converting contract ABIs into OpenAPI/Swagger format
-- Creating API-style documentation for blockchain contract interfaces
-- Setting up a documentation website to visualize contract specifications
-- Working with projects that require standardized contract documentation
-- Needing interactive API documentation with tools like Redocusaurus or Swagger UI
-
-## SubAgent Available
-
-For interactive workflows, you can use the **SubAgent**:
+## 📋 全体フロー概要
 
 ```
-Task(subagent_type="contract-spec-generator", prompt="ABI is at contract/out/MyToken.sol/MyToken.json, contract is at contract/src/MyToken.sol. Please create specifications.")
+Phase 0: 言語設定
+└─ 0.1 ドキュメント生成言語の選択 [AskUserQuestion]
+
+Phase 1: コントラクト分析と選択
+├─ 1.1 利用可能なコントラクトのリスト化 (list-contracts.js)
+├─ 1.2 対象コントラクトのフィルタリング (filter-contracts.py)
+└─ 1.3 仕様書の差分検出 [オプション] (detect-contract-diff.py)
+
+Phase 2: 中間表現の生成
+└─ 2.1 Contract Spec JSONの生成 (generate-contract-spec-json.py)
+
+Phase 3: AI強化（必須）
+├─ 3.1 NatSpecコメントの抽出 (enhance-spec-from-source.py)
+├─ 3.2 エラー解析（関数呼び出しチェーン追跡） (analyze-errors.py)
+├─ 3.3 spec-reviewerエージェント呼び出し [バックグラウンド実行]
+├─ 3.4 品質要件の確認
+└─ 3.5 言語翻訳 [英語以外の場合のみ、language-translatorエージェント]
+
+Phase 4: 品質検証
+├─ 4.1 検証スクリプトの実行 (validate-spec.py)
+├─ 4.2 検証レポートの確認
+└─ 4.3 検証失敗の修正（spec-reviewerエージェント再呼び出し）
+
+Phase 5: OpenAPI仕様書の生成
+├─ 5.1 OpenAPI YAMLの生成 (generate-openapi-from-json.py)
+├─ 5.2 ドキュメント設定ファイルの生成 (generate-doc-config.py)
+├─ 5.3 サンプルの追加 [オプション] (enhance-openapi-examples.py)
+└─ 5.4 出力の検証
 ```
 
-**SubAgent Flow:**
-1. **Specification Generation** → Auto-generate from ABI and contract
-2. **Site Building Confirmation** → Yes: Launch Docusaurus locally
-3. **Vercel Publishing Confirmation** → Yes: Deploy with Vercel CLI
+### パラメータ
 
-Details: `.claude/agents/contract-spec-generator.md`
+**必須パラメータ**（ユーザーから受け取る）:
+- **ABIディレクトリ**: SolidityのABIファイルが格納されているディレクトリへのパス（例: `packages/contract/out`）
+- **コントラクトソースディレクトリ**: Solidityソースファイルディレクトリへのパス（例: `packages/contract/src`）
 
----
+**オプションパラメータ**（デフォルト値あり、環境変数で上書き可能）:
+- **中間表現ディレクトリ**: `docs/contract/ir` (環境変数: `IR_DIR`)
+- **出力ディレクトリ**: `docs/contract/specs` (環境変数: `OUTPUT_DIR`)
+- **フィルタリング済みコントラクトリスト**: `docs/contract/filtered.json` (環境変数: `FILTERED_JSON`)
 
-## Workflow
+### ドキュメント内での変数表記
 
-### Workflow Modes
+本ドキュメントでは、パスを示す際に以下の変数表記を使用します：
 
-This skill supports two workflow modes:
+| 変数表記 | 説明 | デフォルト値 / 例 |
+|---------|------|------------------|
+| `{ABI_DIR}` | ABIディレクトリ（必須パラメータ） | 例: `packages/contract/out` |
+| `{CONTRACT_DIR}` | コントラクトソースディレクトリ（必須パラメータ） | 例: `packages/contract/src` |
+| `{IR_DIR}` | 中間表現ディレクトリ | デフォルト: `docs/contract/ir` |
+| `{OUTPUT_DIR}` | 出力ディレクトリ | デフォルト: `docs/contract/specs` |
+| `{FILTERED_JSON}` | フィルタリング済みコントラクトリスト | デフォルト: `docs/contract/filtered.json` |
 
-1. **Batch Generation Mode**: Generate specifications for multiple contracts efficiently using a two-stage approach (skeleton script + AI enhancement)
-2. **Single Contract Mode**: Generate specifications for one contract at a time manually
+**注意**: 実際のコマンド実行時には、これらの変数を実際のパスに置き換えてください。
 
-**Recommendation**: Use **Batch Generation Mode** when working with multiple contracts for better consistency and efficiency.
+### 環境変数の設定
 
----
-
-### Batch Generation Mode (Recommended for Multiple Contracts)
-
-For projects with multiple contracts, use the two-stage batch generation workflow:
-
-**Stage 1: Generate Skeletons** - Run a script to create basic structures for all contracts
-**Stage 2: Enhance with AI** - Use this skill to add detailed descriptions and error tracking
-
-#### Prerequisites
-
-- Foundry (forge) installed and configured
-- Contract source files in `src/` directory
-- ABIs generated via `forge build`
-
-#### Steps
-
-**Step 1: Generate Enhanced Skeleton Specifications**
-
-Run the enhanced skeleton generator script to create high-quality structures for all contracts:
+以降のコマンドをそのままコピペで実行できるよう、最初に環境変数を設定します：
 
 ```bash
-cd contract
-node generate-openapi-specs.js
+# ========================================
+# 必須パラメータ（ユーザー環境に合わせて設定）
+# ========================================
+export ABI_DIR="packages/contract/out"
+export CONTRACT_DIR="packages/contract/src"
+
+# ========================================
+# オプションパラメータ（デフォルト値、必要に応じて変更）
+# ========================================
+export IR_DIR="docs/contract/ir"
+export OUTPUT_DIR="docs/contract/specs"
+export FILTERED_JSON="docs/contract/filtered.json"
 ```
 
-This will generate **enhanced** OpenAPI YAML and Swagger JSON files for all contracts with:
-- ✅ **Auto-generated function descriptions** (role constants, ERC20 functions, Pausable, AccessControl, Bank operations, Proposal functions, etc.)
-- ✅ **Accurate type mappings** with pattern validation and examples (address → `^0x[0-9a-fA-F]{40}$`, bytes4 → `^0x[0-9a-fA-F]{8}$`, etc.)
-- ✅ **Common errors pre-added** to write functions (InvalidAddress, AmountZero, AccessControlUnauthorizedAccount, BankNotFound, etc.)
-- ✅ **Meaningful parameter descriptions** based on parameter names (e.g., `owner` → "Specifies the owner's address.", `amount` → "Specifies the token amount (in wei).")
-- ✅ **Meaningful return value descriptions** based on function names and output names (e.g., `balanceOf` → "Returns the account balance.", named output `primaryKey` → "Returns the primaryKey.")
-- ✅ **Tag categorization** for UI grouping (Read Functions, Write Functions, Variables, Constants, Mapping, Events, Errors, Structs, Modifier)
-- ✅ Event, error, struct, and modifier paths with complete information
-- ✅ Basic schemas (ErrorResponse, Event schemas, Struct schemas)
-- ✅ Common errors pre-populated in 500 responses
+**重要**: 上記の環境変数を設定した後、以降のコマンド例はそのままコピペで実行できます。
 
-Output location: `docs/contract/{ContractName}/{ContractName}.openapi.yaml` and `.swagger.json`
+## 処理フロー
 
-**What Stage 1 Already Provides:**
-- Complete function descriptions for standard patterns (ERC20, Pausable, AccessControl, etc.)
-- Full parameter type mappings with validation patterns and examples
-- **Meaningful parameter descriptions** (e.g., `spender` → "Specifies the address to approve for token spending.")
-- **Meaningful return value descriptions** (e.g., `balanceOf` → "Returns the account balance.")
-- **Named output support** (when return values have names in ABI, those names are used instead of `result0`)
-- **Tag categorization** for all operations (9 categories):
-  - **With description:**
-    - `Read Functions`: "Functions that retrieve information from the contract without modifying state."
-    - `Write Functions`: "Functions that modify state."
-  - **Without description (name only):**
-    - `Variables`: state variables
-    - `Constants`: constant values
-    - `Mapping`: mapping definitions
-    - `Events`: contract events
-    - `Errors`: custom errors
-    - `Structs`: struct definitions (if present)
-    - `Modifier`: modifier definitions (if present)
-- **x-tagGroups** for UI grouping in Redocusaurus/Swagger UI
-- 500 error responses with common errors already listed
-- Properly formatted YAML/JSON following all specification rules
-- **No raw type annotations** (no `(Solidity: xxx)` in descriptions)
+### Phase 0: 言語設定
 
-**Step 2: Enhance Specifications (Optional)**
+#### 0.1 言語設定の確認と選択
 
-Stage 1 generates complete specifications. Use this skill for optional enhancements:
-- **Internal function error tracking** (add errors from internal function calls to 500 responses)
-- **500 error examples** (add `examples` section with named examples for each error)
-- **Contract-specific logic descriptions** (enhance generic descriptions with detailed explanations)
-- **Modifier information** (add modifier effects to function descriptions)
+**ステップ1: 言語設定ファイルの確認**
 
-**How to use** (when enhancement is needed):
+`docs/contract/language.json` の存在を確認：
 
-1. Open a generated spec file (e.g., `docs/contract/StablecoinCore/StablecoinCore.openapi.yaml`)
-2. Call this skill: "Use contract-spec-generator skill to enhance StablecoinCore specifications"
-3. The skill will:
-   - Load the contract source code to trace internal function calls
-   - Load `references/spec-prompt.md` for formatting rules
-   - Track internal function errors (e.g., if `approve()` calls `_spendAllowance()` which can throw `InsufficientAllowance`, add it)
-   - Add `examples` section to 500 responses
-   - Add modifier information to function descriptions
-   - Enhance generic descriptions with contract-specific details
+**ファイルが存在する場合**:
+1. JSONを読み込み、`code`と`name`フィールドを取得
+2. 「✅ 選択された言語: {name} ({code})」と表示
+3. この言語コードを使用して処理を続行
 
-**Step 3: Verify Specifications**
+**ファイルが存在しない場合**:
+1. AskUserQuestionツールで言語を選択：
+   - **Question**: "Select documentation language / ドキュメント生成言語を選択してください"
+   - **Options**:
+     - English (en) - Default
+     - 日本語 (ja)
+     - 한국어 (ko)
+     - 简体中文 (zh-CN)
 
-After generation/enhancement, verify:
-- [ ] **Tags are assigned** to all operations (Read Functions, Write Functions, Events, Errors, Structs, Modifier)
-- [ ] **x-tagGroups** are present for UI grouping
-- [ ] **500 responses have `examples` section** (each error should have a named example with `summary` and `value`)
-- [ ] Internal function errors are tracked in 500 responses (optional enhancement)
-- [ ] Modifier information is added to function descriptions where applicable
-- [ ] Formatting rules are followed:
-  - No backticks around function/event/error names
-  - No suffixes like "function", "event", "error"
-  - **No raw type annotations** like "(Solidity: address)" in descriptions
-- [ ] All descriptions are in the appropriate language
-- [ ] HTTP 200 for success, HTTP 500 for all errors
-- [ ] Pattern validation and examples are present for all Solidity types (address, bytes4, etc.)
-- [ ] **Named return values** use actual names (not `result0`) when available in ABI
-
-For detailed instructions, see `references/batch-generation-guide.md`.
-
----
-
-### Single Contract Mode
-
-Generate OpenAPI and Swagger specifications for a single Solidity contract manually. This mode is useful when:
-- You only have one contract to document
-- You want full control over the generation process
-- You're testing or learning how the skill works
-
-#### Input Requirements
-
-To generate specifications, provide the following information:
-
-1. **Contract ABI (JSON)** - The Application Binary Interface of the contract
-2. **Contract Source Code (Solidity)** - The complete Solidity source code
-3. **Optional metadata** (if available):
-   - Network name (e.g., "Polygon PoS")
-   - Chain ID (e.g., 137)
-   - Contract address (e.g., "0x...")
-
-#### Steps
-
-1. **Load the specification prompt template**
-
-   Read the comprehensive prompt template from `references/spec-prompt.md`. This file contains all the rules and formatting guidelines for generating specifications.
-
-2. **Prepare the input**
-
-   Format the input by replacing the placeholders in the prompt template:
-   - `{{ABI_JSON}}` - Insert the contract ABI JSON
-   - `{{CONTRACT_SOURCE}}` - Insert the Solidity source code
-   - `{{NETWORK_NAME}}`, `{{CHAIN_ID}}`, `{{CONTRACT_ADDRESS}}` - Insert metadata if available
-
-3. **Execute the generation**
-
-   Follow the detailed rules in the prompt template to generate:
-   - OpenAPI 3.0 YAML file: `docs/contract/{{CONTRACT_NAME}}/{{CONTRACT_NAME}}.openapi.yaml`
-   - Swagger 2.0 JSON file: `docs/contract/{{CONTRACT_NAME}}/{{CONTRACT_NAME}}.swagger.json`
-
-   **Important**: Create the directory structure if it doesn't exist:
-   ```
-   docs/contract/{{CONTRACT_NAME}}/
-   ├── {{CONTRACT_NAME}}.openapi.yaml
-   └── {{CONTRACT_NAME}}.swagger.json
-   ```
-
-4. **Verify the output**
-
-   Ensure the generated specifications:
-   - Are valid YAML/JSON that can be parsed without errors
-   - Include all functions, events, errors, and structures
-   - Follow the formatting rules (no backticks for function/event/error names, no suffixes like "function", "event", "error")
-   - Include error details from both external functions and internal functions they call
-   - Use HTTP 200 for success and HTTP 500 for all errors
-
-#### Key Formatting Rules
-
-The `references/spec-prompt.md` file contains comprehensive rules, but key points include:
-
-- **Identifier formatting**: Do not wrap function names, event names, error names, modifier names, or struct names in backticks
-- **Name suffixes**: Do not add suffixes like "function", "event", "error"
-- **Error tracking**: Include errors from internal functions called by external functions
-- **Response codes**: Use only HTTP 200 (success) and HTTP 500 (all errors)
-- **Descriptions**: All descriptions should be clear and descriptive
-- **No extensions**: Do not use `x-` prefixed extension fields
-
-#### Example Usage
-
-When asked to generate contract specifications:
-
-1. Read the ABI and source code files
-2. Load `references/spec-prompt.md` to access the full specification rules
-3. Replace placeholders with actual contract data
-4. Generate both OpenAPI YAML and Swagger JSON outputs
-5. Save the files in `docs/contract/{{CONTRACT_NAME}}/` directory
-
----
-
-### Phase 2: Create Documentation Site (Optional, User Confirmation Required)
-
-After generating the contract specifications, ask the user if they want to create a documentation website.
-
-**⚠️ Important**: Always ask the user for confirmation before proceeding with Phase 2. Do not automatically create the documentation site without explicit user approval.
-
-#### Confirmation Prompt
-
-After completing Phase 1, present the following options to the user:
-
-```
-Contract specifications have been generated successfully.
-
-Would you like to create a Docusaurus documentation site to view these specifications?
-
-Options:
-1. Yes - Set up a complete documentation website with Redocusaurus
-2. No - Only keep the generated specification files
-```
-
-#### Steps (Only if User Confirms)
-
-1. **Load the Docusaurus setup guide**
-
-   Read `references/docusaurus-setup.md` for detailed instructions on setting up the documentation site.
-
-2. **Check if docs-site already exists**
-
-   Check if `docs-site/` directory already exists in the project root:
-   - If exists: Update the existing configuration
-   - If not exists: Create a new Docusaurus project
-
-3. **Initialize Docusaurus project (if needed)**
-
-   ```bash
-   npx create-docusaurus@latest docs-site classic --typescript
-   cd docs-site
-   ```
-
-4. **Install required dependencies**
-
-   ```bash
-   npm install redocusaurus styled-components
-   ```
-
-   Or use the package manager detected in the project (npm/yarn/pnpm/bun).
-
-5. **Update package.json**
-
-   Ensure `docs-site/package.json` includes:
+2. 選択結果を`docs/contract/language.json`に保存：
    ```json
    {
-     "dependencies": {
-       "@docusaurus/core": "^3.9.2",
-       "@docusaurus/preset-classic": "^3.9.2",
-       "@mdx-js/react": "^3.0.0",
-       "redocusaurus": "^2.5.0",
-       "styled-components": "^6.0.5"
-     }
+     "code": "ja",
+     "name": "日本語"
    }
    ```
 
-6. **Configure docusaurus.config.js**
+**重要**: 選択された言語で以降のすべての出力（画面表示、ファイル生成、ドキュメント、仕様書）を行います。
 
-   Create or update `docs-site/docusaurus.config.js` with:
-   - Redocusaurus preset configuration
-   - Automatic contract specs registration
-   - Theme customization
+---
 
-   **Automatic Contract Registration**:
+### フェーズ1: コントラクト分析と選択
 
-   Add a helper function to automatically detect and register all contracts:
+#### 1.1 利用可能なコントラクトのリスト化
 
-   ```javascript
-   const fs = require('fs');
-   const path = require('path');
+ABIディレクトリから全コントラクトを検出：
 
-   function getContractSpecs() {
-     const contractsDir = path.join(__dirname, '../docs/contract');
-     const specs = [];
-
-     if (!fs.existsSync(contractsDir)) {
-       return specs;
-     }
-
-     const contracts = fs.readdirSync(contractsDir);
-
-     for (const contract of contracts) {
-       const yamlPath = path.join(contractsDir, contract, `${contract}.openapi.yaml`);
-       if (fs.existsSync(yamlPath)) {
-         const id = contract.toLowerCase().replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-         specs.push({
-           id: id,
-           spec: `../docs/contract/${contract}/${contract}.openapi.yaml`,
-           route: `/api/${id}`,
-         });
-       }
-     }
-
-     return specs;
-   }
-   ```
-
-   Then use this function in the Redocusaurus preset:
-
-   ```javascript
-   presets: [
-     // ...
-     [
-       'redocusaurus',
-       {
-         specs: getContractSpecs(),
-         theme: {
-           primaryColor: '#1890ff',
-           options: {
-             hideDownloadButton: false,
-             disableSearch: false,
-             expandResponses: '200',
-             requiredPropsFirst: true,
-             sortPropsAlphabetically: true,
-           },
-         },
-       },
-     ],
-   ],
-   ```
-
-7. **Start the development server**
-
-   ```bash
-   cd docs-site
-   npm run start
-   ```
-
-   The site will be available at `http://localhost:3000`.
-
-8. **Verify the site**
-
-   - Open `http://localhost:3000` in a browser
-   - Navigate to the API Specs section
-   - Verify that all contracts are listed and their specifications are displayed correctly
-   - Check that the sidebar shows all functions, events, and errors
-
-#### Site Structure
-
-After setup, the documentation site will have:
-
-```
-docs-site/
-├── docusaurus.config.js    # Main configuration with Redocusaurus
-├── package.json             # Dependencies
-├── sidebars.js              # Sidebar configuration
-├── src/
-│   └── css/
-│       └── custom.css       # Custom styles
-├── docs/                    # Markdown documentation
-├── static/                  # Static assets
-└── build/                   # Built static site (after npm run build)
-```
-
-The site will automatically:
-- Register all contracts found in `../docs/contract/`
-- Create navigation links for each contract
-- Display interactive API documentation with Redocusaurus
-- Support dark/light themes
-- Include search functionality
-
-#### Deployment Options
-
-After verifying the site works locally, deploy using Vercel:
-
-**Important**: Before deployment, copy OpenAPI files to docs-site:
 ```bash
-mkdir -p docs-site/specs
-cp -r docs/contract/* docs-site/specs/
+python3 .claude/skills/contract-spec-generator/scripts/list-contracts.py \
+  --abi-dir $ABI_DIR \
+  --output docs/contract/contracts.json
 ```
 
-And update `docusaurus.config.js` spec path:
-```javascript
-spec: `./specs/${name}/${name}.openapi.yaml`,
-```
+**処理**: ABIディレクトリからコントラクト名を抽出してJSONリストを生成
 
-Also set `baseUrl: '/'` for Vercel deployment.
+#### 1.2 対象コントラクトのフィルタリング
 
----
+処理対象のコントラクトを選択：
 
-**Option A: Vercel CLI (Recommended)**
-
-1. Install Vercel CLI (if not installed):
-   ```bash
-   npm install -g vercel
-   ```
-
-2. Login to Vercel:
-   ```bash
-   vercel login
-   ```
-
-3. Initial setup and deploy:
-   ```bash
-   cd docs-site
-   vercel
-   ```
-
-4. Production deploy:
-   ```bash
-   vercel --prod
-   ```
-
-**Subsequent deploys**:
 ```bash
-cd docs-site
-vercel --prod
+python3 .claude/skills/contract-spec-generator/scripts/filter-contracts.py \
+  --input docs/contract/contracts.json \
+  --output $FILTERED_JSON
 ```
 
----
+**処理**: テストコントラクト、抽象コントラクト、インターフェースを除外（対話的な選択も可能）
 
-**Option B: Manual Deploy (without CLI)**
+#### 1.2.1 フィルタリング結果の確認（必須）
 
-1. Go to https://vercel.com and login
+フィルタリング後、対象コントラクトの一覧を表示し、ユーザー承認を得る：
 
-2. Click "Add New..." → "Project"
+**処理手順**:
+1. `docs/contract/filtered.json` の内容を読み込む
+2. 対象コントラクトのリストをユーザーに表示:
+   ```
+   📋 仕様書を生成する対象コントラクト（18個）:
+   - StablecoinCore
+   - StablecoinBank
+   - StablecoinIssuance
+   ...
+   ```
+3. `AskUserQuestion` ツールを使用してユーザーに確認:
+   - 質問: "これらのコントラクトで仕様書を生成しますか？"
+   - オプション:
+     - "はい、全て生成する"
+     - "いいえ、キャンセル"
+     - "一部のみ生成したい（手動でfiltered.jsonを編集）"
 
-3. Select "Import Git Repository" or "Upload"
-   - For Git import: Select repo, set Root Directory to `docs-site`
-   - For upload: Drag & drop the docs-site folder
+4. ユーザーが承認した場合のみ、次のフェーズ（Phase 1.3またはPhase 2）に進む
 
-4. Verify settings:
-   - Framework Preset: Docusaurus
-   - Build Command: `npm run build`
-   - Output Directory: `build`
-   - Install Command: `npm install`
+**重要**: この確認ステップをスキップしないようにしてください。
 
-5. Click "Deploy"
+#### 1.3 仕様書の差分検出（オプション）
 
-6. After deployment, you'll get a URL like: `https://{project-name}.vercel.app/`
+既存の仕様書が存在する場合、変更を検出：
 
----
-
-## Resources
-
-### references/spec-prompt.md
-
-The core specification prompt template that defines all rules for generating OpenAPI/Swagger documentation from Solidity contracts. This comprehensive prompt includes:
-
-- Input format and placeholder definitions
-- Contract detection and naming rules
-- Path and operation design for functions
-- Error handling and response structure
-- Struct and type mapping rules
-- Event and modifier documentation rules
-- Output formatting guidelines
-
-Load this file when generating specifications to ensure all rules are followed correctly.
-
-### references/docusaurus-setup.md
-
-Comprehensive guide for setting up a Docusaurus documentation site with Redocusaurus plugin. Includes:
-
-- Installation instructions
-- Configuration examples
-- Automatic contract registration
-- Deployment guide for Vercel CLI
-- Troubleshooting tips
-- Customization options
-
-Refer to this file when creating the documentation site in Phase 2.
-
----
-
-## Complete Usage Examples
-
-### Example 1: Batch Generation for Multiple Contracts
-
-**Scenario**: Generate specifications for all 18 contracts in the project
-
-**Stage 1: Generate Skeletons**
-
-User: "Run the batch generation script"
-
-Assistant actions:
 ```bash
-cd contract
-node generate-openapi-specs.js
+python3 .claude/skills/contract-spec-generator/scripts/detect-contract-diff.py \
+  --filtered-json $FILTERED_JSON \
+  --specs-dir $OUTPUT_DIR \
+  --output docs/contract/diff-report.json
 ```
 
-Output: Skeleton specification files created in `docs/contract/*/`
+**処理**: 仕様書の更新が必要なコントラクトを特定
 
-**Stage 2: Enhance Each Contract**
-
-User: "Use contract-spec-generator skill to enhance StablecoinCore specifications"
-
-Assistant actions:
-1. Read `docs/contract/StablecoinCore/StablecoinCore.openapi.yaml` (generated spec)
-2. Read `contract/src/StablecoinCore.sol` for source code analysis
-3. Load `references/spec-prompt.md` for formatting rules
-4. Enhance descriptions with contract-specific details
-5. Add 500 error responses by analyzing internal functions
-6. Add modifier information to function descriptions
-7. Add `examples` section to 500 responses
-8. Update both YAML and JSON files
-
-User: "Repeat for the remaining 17 contracts"
-
-(Repeat enhancement process for each contract)
-
-**Phase 2: Create Documentation Site (Optional)**
-
-User: "Create a Docusaurus site to view all specifications"
-
-Assistant actions:
-1. Check if docs-site/ directory exists (it already exists)
-2. Read references/docusaurus-setup.md for guidance
-3. Update docs-site/docusaurus.config.js to automatically register all 18 contracts
-4. Start development server: npm run start
-5. Verify site works at http://localhost:3000
+**環境変数**（隔離テスト用オプション）:
+```bash
+export ABI_DIR="temp/test-abi"
+export CONTRACT_DIR="temp/test-contract/src"
+export FILTERED_JSON="temp/output/filtered.json"
+```
 
 ---
 
-### Example 2: Single Contract Mode
+### フェーズ2: 中間表現の生成
 
-**Scenario**: Generate specifications for one contract (StablecoinCore) manually
+#### 2.1 Contract Spec JSONの生成
 
-**Phase 1: Generate Specifications**
+ABIとソースコードから構造化された中間表現を作成：
 
-User: "Generate contract specifications for StablecoinCore"
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/generate-contract-spec-json.py \
+  --abi-dir $ABI_DIR \
+  --filtered-json $FILTERED_JSON \
+  --output-dir $IR_DIR
+```
 
-Assistant actions:
-1. Read `contract/src/StablecoinCore.sol` for source code
-2. Read contract ABI (via forge inspect or from build artifacts)
-3. Load `references/spec-prompt.md` for generation rules
-4. Generate `docs/contract/StablecoinCore/StablecoinCore.openapi.yaml` with complete descriptions
-5. Generate `docs/contract/StablecoinCore/StablecoinCore.swagger.json`
+**処理**:
+- ABI JSON構造を解析
+- 関数、イベント、エラー、構造体を抽出
+- Contract Spec JSON形式に変換（descriptionフィールドは空）
 
-**Phase 2: Create Documentation Site (User Confirmation)**
+**生成される構造**:
+```json
+{
+  "contractName": "StablecoinCore",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "StablecoinCore",
+    "description": "",
+    "category": ""
+  },
+  "readFunctions": [...],
+  "writeFunctions": [...],
+  "events": [...],
+  "customErrors": {...}
+}
+```
 
 ---
 
-### Phase 3: Generate Markdown Documentation + Docusaurus Integration
+### フェーズ3: AI強化（必須）
 
-After generating the OpenAPI/Swagger specifications, generate comprehensive Markdown documentation for the Docusaurus site. This creates a dual-documentation system with both human-readable docs and API specs.
+#### 3.1 NatSpecコメントの抽出
 
-#### Documentation Site Structure
+Solidity `///` コメントを解析してContract Spec JSONに注入：
 
-The final site has:
-- **API Spec** (`/api/*`): Redoc-based interactive API documentation from OpenAPI/Swagger specs
-- **Docs** (`/docs/*`): Human-readable Markdown documentation with overview, features, and function details
-
-**Navigation:**
-- **Header**: Category dropdowns (Core Contracts, Features, Access Control, MultiSig & Others) → Docs
-- **Homepage**: Contract cards with "View Specification" button → API Spec
-- **Each Doc page**: Link to corresponding API Spec at the top
-
-#### Steps
-
-1. **Run the Markdown generation script**
-
-   ```bash
-   cd contract
-   node generate-contract-docs.js
-   ```
-
-   This will generate:
-   - Individual Markdown files for each contract in `docs-site/docs/contracts/`
-   - An index page (`index.md`) with contract overview
-   - Updated `sidebars.js` with proper categorization
-
-2. **Generated Documentation Structure**
-
-   Each contract documentation includes:
-   - **API Specification Link**: Link to `/api/{ContractName}` at the top
-   - **Overview**: Contract description
-   - **Inheritance**: List of inherited contracts
-   - **Key Features**: Detailed explanation of main features
-   - **Function List**: Collapsible sections by category
-     - Constants
-     - Variables
-     - Mapping
-     - Read Functions
-     - Write Functions
-     - Events
-     - Errors
-
-3. **Build and Preview**
-
-   ```bash
-   cd docs-site
-   npm install
-   npm run build
-   npm run serve
-   ```
-
-4. **Customization**
-
-   The script (`contract/generate-contract-docs.js`) includes:
-   - `CONTRACT_CATEGORIES`: Contract categorization for sidebar/navbar
-   - `CONTRACT_DESCRIPTIONS`: Contract overview and feature descriptions
-     - `overview`: Short description of the contract
-     - `features`: Array of `{title, description}` for key features
-
-   Modify these to customize the documentation structure.
-
-#### docusaurus.config.js Configuration
-
-The site uses a dual-preset configuration:
-
-```javascript
-presets: [
-  // Markdown Docs
-  ['@docusaurus/preset-classic', {
-    docs: {
-      sidebarPath: require.resolve('./sidebars.js'),
-      routeBasePath: '/docs',
-    },
-  }],
-  // API Specs (Redoc)
-  ['redocusaurus', {
-    specs: contractSpecs,  // Array of {id, spec, route}
-    theme: { primaryColor: '#1890ff' },
-  }],
-],
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/enhance-spec-from-source.py \
+  --contract-dir $CONTRACT_DIR \
+  --ir-dir $IR_DIR \
+  --filtered-json $FILTERED_JSON
 ```
 
-**Navbar with Category Dropdowns:**
+**処理**:
+- Solidityソースから `@notice`, `@dev`, `@param`, `@return` を抽出
+- Contract Spec JSONの `documentation` フィールドに注入
 
-```javascript
-navbar: {
-  items: [
+#### 3.2 エラー解析（関数呼び出しチェーン追跡）
+
+関数が発生させる可能性のある全エラーを再帰的に収集：
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/analyze-errors.py \
+  --contract-dir $CONTRACT_DIR \
+  --ir-dir $IR_DIR \
+  --filtered-json $FILTERED_JSON
+```
+
+**処理**:
+- 各関数が直接発生させるエラーを抽出
+- 関数呼び出しチェーンを追跡し、内部関数のエラーも収集
+- 継承チェーンを辿って関数定義を解決
+- 無限再帰を防止（visitedセットで管理）
+- modifier内のエラーも検出
+
+**技術詳細**:
+- `extract_function_calls()`: 関数本体から関数呼び出しを抽出
+- `find_function_in_sources()`: 継承チェーン全体から関数定義を検索
+- `collect_errors_recursively()`: 再帰的にエラーを収集
+
+**例**:
+```solidity
+function proposeKeyRotation(...) external returns (uint256 proposalId) {
+    // 直接的なエラー
+    if (!_isValidKey(...)) {
+        revert BankScopedRoles_UnauthorizedRoleAdmin();
+    }
+
+    // 内部関数呼び出し（この関数のエラーも追跡される）
+    return _proposeKeyRotation(role, oldKey, newKey);
+}
+```
+
+#### 3.3 spec-reviewerエージェントの呼び出し（並列実行）
+
+包括的なドキュメントを追加するため、spec-reviewerエージェントを並列でバックグラウンド実行する。
+
+**ステップ1: 進捗管理の初期化**
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/init-progress.py \
+  --filtered-json $FILTERED_JSON \
+  --output docs/contract/progress.json
+```
+
+**処理**: 総コントラクト数と各コントラクトの初期状態（pending）を記録
+
+**ステップ2: spec-reviewerエージェント並列起動**
+
+全コントラクトに対して、spec-reviewerエージェントを起動（`language.json`から読み取った言語コードを使用）：
+
+```bash
+/spec-reviewer {language.json の code}
+```
+
+例: `/spec-reviewer ja` または `/spec-reviewer en`
+
+**ステップ3: subagent完了時の自動処理（終了コード方式）**
+
+各subagentは完了時に以下を自動実行します：
+
+**3.1 チェックリスト更新**
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/update-progress.py --contract {ContractName}
+```
+
+**処理内容**:
+1. 自分の担当のチェックリストにチェックを入れる（`progress.json`で`"completed"`に更新）
+2. 他のチェックリストが全て埋まっているか確認
+3. 進捗状況を表示（例: `📊 進捗: 15/18 (残り3個)`）
+4. **終了コードで情報を渡す**:
+   - `remaining === 0`（全完了） → **終了コード 0**
+   - `remaining > 0`（未完了） → **終了コード 1**
+
+**ステップ4: メインエージェント再起動時の判定**
+
+各subagent完了時、メインエージェントが自動的に呼び起こされます（Claude Codeの仕様）。
+メインエージェントが再起動したら、**subagentの出力を確認**：
+
+**subagent出力に「🎉 全完了！」が含まれる場合**:
+1. `/tasks`コマンドでダブルチェック
+2. 全タスクが`completed`であることを確認
+3. **Phase 4（品質検証）へ進む**
+
+**それ以外の場合**:
+- まだ実行中のsubagentがある
+- **何もせず即停止**（次のsubagent完了時に再起動される）
+
+**重要**: スクリプトは実行しない。subagentのupdate-progress.pyが出力する「🎉 全完了！」メッセージで判定する。
+
+**エージェントが追加する内容**:
+- `metadata.description` (3行以上の包括的な概要)
+- `metadata.category` (コントラクトの分類)
+- 全関数の `documentation.summary`
+- 全関数の `documentation.details`
+- 全パラメータと戻り値の `description`
+- 全カスタムエラーの `description`（パターンマッチングでは対応できない複雑な説明も生成）
+- 全イベントの `documentation.summary`
+- 書き込み関数の完全なエラーケースリスト
+
+#### 3.4 品質要件
+
+AI強化は以下を生成する必要があります:
+- ✅ 完全なメタデータdescription（3行以上）
+- ✅ カテゴリ割り当て
+- ✅ 全関数に `summary` と `details` がある
+- ✅ 全パラメータに `description` がある
+- ✅ 全エラーに `description` がある
+- ✅ 書き込み関数に全ての可能なエラーケースがリストされている
+- ✅ クライアント納品可能な品質レベル
+
+#### 3.5 言語翻訳（英語以外の場合のみ）
+
+英語以外の言語が選択された場合、全Contract Spec JSONを翻訳します。
+
+**ステップ1: 翻訳進捗管理の初期化**
+
+```bash
+# 英語の場合はスキップ
+if [ "$TARGET_LANGUAGE" = "en" ]; then
+  echo "✅ 英語モード: 翻訳をスキップ"
+  # Phase 4へ直接進む
+fi
+
+# 翻訳進捗管理を初期化
+python3 .claude/skills/contract-spec-generator/scripts/init-progress-translation.py
+```
+
+**入力**: `{FILTERED_JSON}` (対象コントラクトリスト)
+
+**出力**: `docs/contract/progress-translation.json` (翻訳進捗管理ファイル)
+
+**処理**: 総コントラクト数と各コントラクトの初期状態（pending）を記録
+
+**ステップ2: language-translatorエージェント並列起動**
+
+全コントラクトに対して、language-translatorエージェントをバックグラウンドで並列起動：
+
+```bash
+# filtered.jsonからコントラクトリストを取得
+CONTRACTS=$(node -e "console.log(require('./docs/contract/filtered.json').selected.join(' '))")
+
+# 全コントラクトに対してlanguage-translatorを並列起動
+for CONTRACT in $CONTRACTS; do
+  # language-translatorエージェントを起動（バックグラウンド）
+  claude-code agent language-translator \
+    --input "CONTRACT_SPEC_JSON=docs/contract/ir/${CONTRACT}.json" \
+    --input "TARGET_LANGUAGE=$TARGET_LANGUAGE" \
+    --background
+done
+
+echo "✅ ${#CONTRACTS[@]}個の翻訳エージェントを起動"
+```
+
+**起動完了後、メインエージェントは停止**
+
+全エージェント起動後、メインエージェントは**停止**します。各翻訳subagent完了時に自動的に再起動されます。
+
+**ステップ3: subagent完了時の自動処理（終了コード方式）**
+
+各翻訳subagentは完了時に以下を自動実行します：
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/update-progress-translation.py --contract {ContractName}
+```
+
+**処理内容**:
+1. 自分の担当のチェックリストにチェックを入れる（`progress-translation.json`で`"completed"`に更新）
+2. 他のチェックリストが全て埋まっているか確認
+3. 進捗状況を表示（例: `📊 翻訳進捗: 15/18 (残り3個)`）
+4. **終了コードで情報を渡す**:
+   - `remaining === 0`（全完了） → **終了コード 0**
+   - `remaining > 0`（未完了） → **終了コード 1**
+
+**ステップ4: メインエージェント再起動時の判定**
+
+各翻訳subagent完了時、メインエージェントが自動的に呼び起こされます。
+メインエージェントが再起動したら、**subagentの出力を確認**：
+
+**subagent出力に「🎉 全翻訳完了！」が含まれる場合**:
+1. `/tasks`コマンドでダブルチェック
+2. 全タスクが`completed`であることを確認
+3. **Phase 4（品質検証）へ進む**
+
+**それ以外の場合**:
+- まだ実行中の翻訳subagentがある
+- **何もせず即停止**（次の翻訳subagent完了時に再起動される）
+
+**重要**: スクリプトは実行しない。subagentのupdate-progress-translation.pyが出力する「🎉 全翻訳完了！」メッセージで判定する。
+
+---
+
+### フェーズ4: 品質検証
+
+#### 4.1 検証スクリプトの実行
+
+Contract Spec JSONの完全性を検証：
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/validate-spec.py
+```
+
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/validate-spec.py \
+  --ir-dir $IR_DIR \
+  --output docs/contract/validation-report.json
+```
+
+**処理**:
+- メタデータの完全性チェック（description、category）
+- 読み取り関数の品質チェック（summary、パラメータ説明）
+- 書き込み関数の品質チェック（summary、パラメータ、エラーケース）
+- カスタムエラーの説明チェック
+- イベントの説明チェック
+
+#### 4.2 検証レポートの確認
+
+JSONレポートを確認：
+
+```json
+{
+  "passed": ["StablecoinCore", "StablecoinBank"],
+  "failed": [
     {
-      type: 'dropdown',
-      label: 'Core Contracts',
-      items: [
-        { to: '/docs/contracts/StablecoinCore', label: 'StablecoinCore' },
-        // ...
+      "contract": "AccessControlMultiSig",
+      "errors": [
+        "メタデータの説明が空です",
+        "読み取り関数 getRoleAdmin: サマリーが空です"
       ],
-    },
-    // Features, Access Control, MultiSig & Others dropdowns
+      "warnings": ["イベント RoleGranted: サマリーが空です"]
+    }
   ],
-},
+  "warnings": [...]
+}
 ```
 
-#### When to Use Phase 3
+**終了コード**:
+- `0`: 全ての検証が合格
+- `1`: 1つ以上の検証が失敗
 
-- After generating OpenAPI specs (Phase 1)
-- When you need both API specs and human-readable documentation
-- When deploying a documentation site for developers
-- When you want category-based navigation with detailed feature explanations
+#### 4.3 検証失敗の修正
+
+検証が失敗した場合:
+1. レポート内のエラーメッセージを確認
+2. 失敗したコントラクトに対してspec-reviewerエージェントを再呼び出し
+3. 全て合格するまで検証を再実行
+
+**全ての検証が合格するまでフェーズ5に進まないでください。**
 
 ---
 
-## Summary
+### フェーズ5: OpenAPI仕様書の生成
 
-This skill provides complete workflows for generating smart contract documentation:
+#### 5.1 OpenAPI YAMLの生成
 
-**Workflow Modes:**
-- **Batch Generation Mode** (recommended): Two-stage approach using skeleton script + AI enhancement for multiple contracts
-- **Single Contract Mode**: Direct generation for individual contracts
+Contract Spec JSONをOpenAPI 3.0 YAMLに変換：
 
-**Phases:**
-- **Stage/Phase 1**: Generate OpenAPI/Swagger specifications
-- **Phase 2**: Create a Docusaurus documentation website (optional, requires user confirmation)
-- **Phase 3**: Generate Markdown documentation + Docusaurus integration (recommended)
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/generate-openapi-from-json.py
+```
 
-**Final Documentation Site Structure:**
-- **Homepage** (`/`): Contract cards with "View Specification" button → API Spec
-- **API Spec** (`/api/*`): Redoc-based interactive documentation
-- **Docs** (`/docs/*`): Human-readable Markdown documentation
-- **Header Navigation**: Category dropdowns (Core Contracts, Features, Access Control, MultiSig & Others) → Docs
+**入力**: `{IR_DIR}/*.json` (検証済み)
 
-**Site UI Specification (Important):**
+**出力**: `docs/contract/specs/[ContractName]/[ContractName].openapi.yaml`
 
-| Term | Content | Path |
-|------|---------|------|
-| **Specification** | OpenAPI/Swagger format (Redoc display) | `/api/{ContractName}` |
-| **Documentation** | Markdown format (overview + function list) | `/docs/*` |
+**処理**:
+- Contract Spec JSONをOpenAPI 3.0形式に変換
+- タグ分類を適用（読み取り関数、書き込み関数、イベント等）
+- HTTPエンドポイントマッピングを定義
+- レスポンススキーマを生成
+- エラーレスポンスの例を追加
 
-**Header Structure:**
+#### 5.2 ドキュメント設定ファイルの生成
 
-| Position | Element | Link Target |
-|----------|---------|-------------|
-| Left end | Logo + Project name | `/` |
-| Second | **Docs** | `/overview` (System overview) |
-| Third onwards | Category dropdown | `/api/{ContractName}` (specifications) |
-| Right end | GitHub | Repository URL |
+ドキュメントサイト用の設定ファイルを作成：
 
-**Page Structure:**
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/generate-doc-config.py
+```
 
-| Page | Path | Content |
-|------|------|---------|
-| **Top Page** | `/` | Contract cards by category |
-| **Overview Page** | `/overview` | System-wide description, contract list |
-| **Documentation** | `/docs/contracts/*` | Detailed documentation for each contract |
-| **Specification** | `/api/*` | OpenAPI/Swagger (Redoc display) |
+**入力**:
+- `{FILTERED_JSON}`
+- `{IR_DIR}/*.json`
 
-**UI Element Specifications:**
+**出力**: `docs/contract/doc-config.json`
 
-| Element | Specification |
-|---------|---------------|
-| **Header left** | "Docs" → `/overview` (system overview page) |
-| **Header dropdown** | Category name → Link to each contract's **specification** |
-| **Hero** | Title + Subtitle only. **No** buttons |
-| **Category name** | **Centered** |
-| **Card** | Contract name + description + "View Specification" button |
-| **Button** | "View Specification" → `/api/{ContractName}` |
+**処理**:
+- カテゴリ分類を生成
+- コントラクト概要を集約
+- Docusaurusサイト構築用の設定を出力
 
-**Button Specifications:**
+#### 5.3 サンプルの追加（オプション）
 
-| Item | Value |
-|------|-------|
-| Text | "View Specification" |
-| Width | `100%` (match card width) |
-| Height | `40px` |
-| Font size | `14px` |
-| Background color | Project's primary color (customizable) |
-| Border radius | `4px` |
+OpenAPI仕様書にリクエスト/レスポンスサンプルを追加：
 
-**Prohibited Items:**
-- ❌ "Get Started", "API Reference", "Learn more" buttons in hero
-- ❌ Multiple links like "Documentation", "API Reference" in cards
-- ❌ Left-aligned category names
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/enhance-openapi-examples.py
+```
 
-**Customizable Items:**
-- ✅ Primary color (`--ifm-color-primary`)
-- ✅ Logo image
-- ✅ Project name
-- ✅ Contract descriptions
+**入力**: `docs/contract/specs/*/*.openapi.yaml`
 
-**Fixed Items (As per template):**
-- ❌ Header structure (Docs + category dropdown)
-- ❌ Card structure (name + description + 1 button)
-- ❌ Button text "View Specification"
-- ❌ Layout, spacing, button size
+**出力**: `docs/contract/specs/*/*.openapi.yaml` (サンプル付き)
 
-**Detailed Templates:** See "Template Files" section in `.claude/agents/contract-spec-generator.md`
+**処理**: 各エンドポイントにサンプルリクエストとレスポンスを追加
 
-**Key Resources:**
-- `contract/generate-openapi-specs.js` - OpenAPI/Swagger skeleton generator
-- `contract/generate-contract-docs.js` - Markdown documentation generator
-- `docs-site/docusaurus.config.js` - Site configuration with dual presets
-- `references/spec-prompt.md` - Specification generation rules
-- `references/docusaurus-setup.md` - Documentation site setup guide
+#### 5.4 出力の検証
 
-**Recommended Workflow:**
-1. Run `node generate-openapi-specs.js` to generate OpenAPI/Swagger specs
-2. Run `node generate-contract-docs.js` to generate Markdown documentation
-3. Build and deploy the Docusaurus site: `cd docs-site && npm run build`
+生成された仕様書を確認：
+- ファイルサイズと行数
+- 完全な関数ドキュメント
+- エラーレスポンスの例
+- 型マッピング
 
-**Generated Documentation Features:**
-- Each Markdown doc has a link to corresponding API Spec at the top
-- Main features are explained in detail (not just function listing)
-- Function lists are collapsible (`<details>` sections)
-- Category-based navigation in header dropdowns
+**期待される品質**:
+- 全関数に日本語の説明がある
+- 全パラメータが文書化されている
+- 例付きのエラーケース
+- クライアント納品可能な形式
+
+---
+
+# リファレンス
+
+## 📚 スクリプトリファレンス
+
+### list-contracts.js
+**パス**: `.claude/skills/contract-spec-generator/scripts/list-contracts.js`
+
+**目的**: ABIディレクトリから全コントラクトを検出
+
+**出力**: `docs/contract/contracts.json`
+
+**使用法**: `node scripts/list-contracts.js`
+
+---
+
+### filter-contracts.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/filter-contracts.py`
+
+**目的**: 対話的なコントラクト選択またはバッチフィルタリング
+
+**入力**: `docs/contract/contracts.json`
+
+**出力**: `{FILTERED_JSON}`
+
+**使用法**: `node scripts/filter-contracts.py`
+
+**機能**:
+- テストコントラクト（*.t.sol）の除外
+- 抽象コントラクトの除外
+- インターフェースの除外
+- 対話的な複数選択または環境変数による指定
+
+---
+
+### detect-contract-diff.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/detect-contract-diff.py`
+
+**目的**: ABIと既存仕様書の間の変更を検出
+
+**入力**:
+- `{FILTERED_JSON}`
+- `{OUTPUT_DIR}` (既存の仕様書)
+
+**出力**: `docs/contract/diff-report.json`
+
+**使用法**: `node scripts/detect-contract-diff.py`
+
+---
+
+### generate-contract-spec-json.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/generate-contract-spec-json.py`
+
+**目的**: ABIからContract Spec JSONスケルトンを生成
+
+**入力**:
+- `{FILTERED_JSON}`
+- `{ABI_DIR}` (ABIファイル)
+
+**出力**: `{IR_DIR}/*.json`
+
+**使用法**:
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/generate-contract-spec-json.py \
+  --abi-dir $ABI_DIR \
+  --filtered-json $FILTERED_JSON \
+  --output-dir $IR_DIR
+```
+
+---
+
+### enhance-spec-from-source.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/enhance-spec-from-source.py`
+
+**目的**: NatSpecコメントを抽出してContract Spec JSONに注入
+
+**入力**:
+- `{IR_DIR}/*.json`
+- `{CONTRACT_DIR}` (Solidityソース)
+- `{FILTERED_JSON}`
+
+**出力**: `{IR_DIR}/*.json` (NatSpec付き)
+
+**使用法**:
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/enhance-spec-from-source.py \
+  --contract-dir $CONTRACT_DIR \
+  --ir-dir $IR_DIR \
+  --filtered-json $FILTERED_JSON
+```
+
+---
+
+### analyze-errors.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/analyze-errors.py`
+
+**目的**: 関数呼び出しチェーンを追跡してエラーを収集
+
+**入力**:
+- `{IR_DIR}/*.json` (NatSpec付き)
+- `{CONTRACT_DIR}` (Solidityソース)
+- `{FILTERED_JSON}`
+
+**出力**: `{IR_DIR}/*.json` (エラー情報付き)
+
+**使用法**:
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/analyze-errors.py \
+  --contract-dir $CONTRACT_DIR \
+  --ir-dir $IR_DIR \
+  --filtered-json $FILTERED_JSON
+```
+
+**処理内容**:
+- 各書き込み関数からエラーを抽出
+- 関数呼び出しチェーンを再帰的に追跡
+- 継承チェーンを辿って関数定義を検索
+- modifier内のエラーも検出
+- 無限再帰防止
+
+**主要関数**:
+- `extract_function_calls(func_body)`: 関数本体から関数呼び出しを抽出
+- `find_function_in_sources(func_name, all_sources, contract_name, inheritance_chain)`: 継承チェーン全体から関数定義を検索
+- `collect_errors_recursively(func_name, source, all_sources, contract_name, custom_errors, modifiers_map, visited)`: 再帰的にエラーを収集
+
+---
+
+### validate-spec.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/validate-spec.py`
+
+**目的**: AI強化後のContract Spec JSON品質を検証
+
+**入力**: `{IR_DIR}/*.json` (AI強化版)
+
+**出力**: `docs/contract/validation-report.json`
+
+**使用法**:
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/validate-spec.py \
+  --ir-dir $IR_DIR \
+  --output docs/contract/validation-report.json
+```
+
+**終了コード**:
+- `0`: 全検証が合格
+- `1`: 1つ以上の検証が失敗
+
+**検証チェック項目**:
+- メタデータの完全性（description、category）
+- 読み取り関数の品質（summary、パラメータ説明）
+- 書き込み関数の品質（summary、パラメータ、エラーケース）
+- カスタムエラーの説明
+- イベントの説明
+
+---
+
+### generate-openapi-from-json.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/generate-openapi-from-json.py`
+
+**目的**: Contract Spec JSONからOpenAPI 3.0 YAMLを生成
+
+**入力**: `{IR_DIR}/*.json` (検証済み)
+
+**出力**: `docs/contract/specs/*/*.openapi.yaml`
+
+**使用法**:
+```bash
+python3 .claude/skills/contract-spec-generator/scripts/generate-openapi-from-json.py \
+  --ir-dir $IR_DIR \
+  --output-dir $OUTPUT_DIR
+```
+
+---
+
+### generate-doc-config.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/generate-doc-config.py`
+
+**目的**: ドキュメント設定ファイルを生成
+
+**入力**:
+- `{FILTERED_JSON}`
+- `{IR_DIR}/*.json`
+
+**出力**: `docs/contract/doc-config.json`
+
+**使用法**: `node scripts/generate-doc-config.py`
+
+---
+
+### enhance-openapi-examples.py
+**パス**: `.claude/skills/contract-spec-generator/scripts/enhance-openapi-examples.py`
+
+**目的**: OpenAPI仕様書にリクエスト/レスポンス例を追加（オプション）
+
+**入力**: `docs/contract/specs/*/*.openapi.yaml`
+
+**出力**: `docs/contract/specs/*/*.openapi.yaml` (例付き)
+
+**使用法**: `node scripts/enhance-openapi-examples.py`
+
+---
+
+## 🔧 技術詳細
+
+### Solidity型マッピング
+
+| Solidity型 | OpenAPI型 | フォーマット | 例 |
+|-----------|----------|---------|-----|
+| `address` | `string` | `address` | "0x742d35Cc6634C0532925a3b844Bc454e4438f44e" |
+| `uint256`, `uint` | `string` | `uint256` | "1000000000000000000" |
+| `int256`, `int` | `string` | `int256` | "-1000000000000000000" |
+| `bool` | `boolean` | - | true |
+| `string` | `string` | - | "Hello" |
+| `bytes`, `bytes32` | `string` | `bytes` | "0x1234..." |
+| 配列 (`[]`) | `array` | - | ["item1", "item2"] |
+| 構造体 | `object` | - | {"field1": "value1"} |
+
+### エラーレスポンス形式
+
+全エンドポイントには標準化されたエラーレスポンスが含まれます：
+
+```yaml
+responses:
+  '200':
+    description: 正常な処理
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            return0:
+              type: string
+              description: 戻り値の説明
+  '500':
+    description: "この関数で発生する可能性のあるエラーの一覧です。<br>・**InvalidAddress**<br>アドレスがゼロアドレスの場合<br>・**InsufficientBalance**<br>残高が不足している場合<br>"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorResponse'
+        examples:
+          InvalidAddress:
+            summary: InvalidAddress
+            value:
+              error: "InvalidAddress"
+              message: "アドレスがゼロアドレスの場合"
+          InsufficientBalance:
+            summary: InsufficientBalance
+            value:
+              error: "InsufficientBalance"
+              message: "残高が不足している場合"
+```
+
+### タグカテゴリ
+
+関数と要素はUI上でのグループ化のためにタグに分類されます：
+
+- **読み取り関数**: 状態を変更しないview/pure関数
+- **書き込み関数**: コントラクトの状態を変更する関数
+- **変数**: パブリックな状態変数
+- **定数**: 定数値
+- **Mapping**: マッピング変数
+- **イベント**: コントラクトイベント
+- **エラー**: カスタムエラー
+- **構造体**: 構造体定義
+- **Modifier**: 関数修飾子
+
+---
+
+## ✅ ベストプラクティス
+
+1. **全フェーズを順番に実行** - フェーズをスキップしない（特にPhase 3.3のspec-reviewerエージェント呼び出し）
+2. **AI強化後は必ず検証を実行** - フェーズ4をスキップしない
+3. **テストには環境変数を使用** - 隔離されたtemp/ディレクトリでテスト
+4. **OpenAPI生成前に検証が合格していることを確認** - フェーズ5には検証済み入力が必要
+5. **検証レポートを注意深く確認** - 全てのエラーを修正、警告は許容可能
+6. **バッチ処理を使用** - 一貫性のため全コントラクトを1セッションで処理
+7. **spec-reviewerエージェントを適切に呼び出す** - 全ての翻訳・説明生成を担当（必ずバックグラウンド実行）
+8. **出力品質をチェック** - ファイルサイズ、行数、ドキュメント完全性を検証
+
+---
+
+## 🔗 次のステップ
+
+このスキルでOpenAPI仕様書を生成した後：
+
+1. **Markdownドキュメントの生成**: `contract-doc-generator` スキルを使用してOpenAPI仕様書からMarkdownドキュメントを作成
+2. **ドキュメントサイトの構築**: `contract-site-builder` スキルを使用してDocusaurusドキュメントサイトを作成
+3. **デプロイ**: 生成された静的サイトをホスティングプラットフォームにデプロイ
+
+**関連スキル**:
+- `contract-doc-generator`: OpenAPI仕様書からのMarkdownドキュメント生成
+- `contract-site-builder`: Docusaurusサイトの構築とデプロイ
+
+**関連コマンド**:
+- `/generate-contract-specs`: このスキルを実行してOpenAPI仕様書を生成

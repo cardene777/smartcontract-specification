@@ -1,0 +1,609 @@
+openapi: 3.0.3
+info:
+  title: ERC20 スマートコントラクト API
+  description: |
+    ERC20トークン標準の実装コントラクトです。
+
+    このコントラクトはOpenZeppelin Contracts v5.4.0に基づくERC20トークンの基本実装を提供します。トークンの作成方法には依存せず、派生コントラクトで_mint関数を使用して供給メカニズムを追加する必要があります。
+
+    デフォルトの小数点以下桁数は18で、EtherとWeiの関係を模倣しています。この値を変更するにはdecimals関数をオーバーライドしてください。
+
+    関数は失敗時にfalseを返すのではなくrevertするというOpenZeppelinのガイドラインに従っています。
+  version: 1.0.0
+  license:
+    name: MIT
+  contact:
+    name: OpenZeppelin
+    url: https://openzeppelin.com
+
+servers:
+  - url: https://api.example.com/v1
+    description: メインネット API サーバー
+
+tags:
+  - name: 読み取り関数
+    description: 状態を変更しないview関数
+  - name: 書き込み関数
+    description: コントラクトの状態を変更する関数
+  - name: イベント
+    description: コントラクトが発行するイベント
+  - name: エラー
+    description: コントラクトのカスタムエラー
+
+paths:
+  /name:
+    get:
+      operationId: name
+      summary: トークンの名前を返します
+      description: |
+        コンストラクタで設定された名前を返します。この値はコントラクトのデプロイ後は変更できません。
+      tags:
+        - 読み取り関数
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: トークンの名前
+              example:
+                result: "My Token"
+
+  /symbol:
+    get:
+      operationId: symbol
+      summary: トークンのシンボルを返します
+      description: |
+        コンストラクタで設定されたシンボル（通常は名前の短縮版）を返します。この値はコントラクトのデプロイ後は変更できません。
+      tags:
+        - 読み取り関数
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: トークンのシンボル
+              example:
+                result: "MTK"
+
+  /decimals:
+    get:
+      operationId: decimals
+      summary: ユーザー表示用の小数点以下桁数を返します
+      description: |
+        例えば、decimalsが2の場合、505トークンの残高はユーザーに5.05（505 / 10 ** 2）として表示されるべきです。
+
+        トークンは通常18の値を選択し、EtherとWeiの関係を模倣します。これはこの関数が返すデフォルト値であり、オーバーライドされない限り変更されません。
+
+        注意：この情報は表示目的にのみ使用され、IERC20-balanceOfやIERC20-transferを含むコントラクトの算術演算には一切影響しません。
+      tags:
+        - 読み取り関数
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: integer
+                    format: uint8
+                    description: トークンの小数点以下桁数
+              example:
+                result: 18
+
+  /totalSupply:
+    get:
+      operationId: totalSupply
+      summary: 存在するトークンの総量を返します
+      description: |
+        IERC20インターフェースの実装です。ミントとバーンによって増減します。
+      tags:
+        - 読み取り関数
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    format: uint256
+                    description: 存在するトークンの総量
+              example:
+                result: "1000000000000000000000000"
+
+  /balanceOf:
+    get:
+      operationId: balanceOf
+      summary: 指定されたアドレスが所有するトークン量を返します
+      description: |
+        IERC20インターフェースの実装です。
+      tags:
+        - 読み取り関数
+      parameters:
+        - name: account
+          in: query
+          required: true
+          description: 残高を照会するアドレス
+          schema:
+            type: string
+            format: address
+            example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    format: uint256
+                    description: 指定されたアドレスが所有するトークン量
+              example:
+                result: "1000000000000000000"
+
+  /allowance:
+    get:
+      operationId: allowance
+      summary: spenderがownerの代わりに使用できる残りのトークン量を返します
+      description: |
+        IERC20インターフェースの実装です。この値はapproveまたはtransferFromが呼び出されると変更されます。
+      tags:
+        - 読み取り関数
+      parameters:
+        - name: owner
+          in: query
+          required: true
+          description: トークン所有者のアドレス
+          schema:
+            type: string
+            format: address
+            example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        - name: spender
+          in: query
+          required: true
+          description: 使用許可を受けたアドレス
+          schema:
+            type: string
+            format: address
+            example: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    format: uint256
+                    description: spenderがownerの代わりに使用できる残りのトークン量
+              example:
+                result: "500000000000000000000"
+
+  /transfer:
+    post:
+      operationId: transfer
+      summary: 呼び出し元のアカウントから指定されたアドレスへトークンを送付します
+      description: |
+        IERC20-transferの実装です。
+
+        要件：
+        - toはゼロアドレスであってはなりません。
+        - 呼び出し元は少なくともvalue以上の残高を持っている必要があります。
+      tags:
+        - 書き込み関数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - value
+              properties:
+                to:
+                  type: string
+                  format: address
+                  description: トークンの送付先アドレス
+                value:
+                  type: string
+                  format: uint256
+                  description: 送付するトークン量
+            example:
+              to: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+              value: "1000000000000000000"
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+                    description: 操作が成功した場合はtrue
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransferEvent'
+              example:
+                result: true
+                events:
+                  - name: "Transfer"
+                    from: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    to: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+                    value: "1000000000000000000"
+        '500':
+          description: |
+            この関数で発生する可能性のあるエラーの一覧です。<br>
+            ・**ERC20InvalidReceiver**<br>送付先アドレスがゼロアドレスの場合に発生します<br>
+            ・**ERC20InvalidSender**<br>送付元アドレスがゼロアドレスの場合に発生します（内部エラー）<br>
+            ・**ERC20InsufficientBalance**<br>送付元の残高が送付量より少ない場合に発生します
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ERC20InvalidReceiver:
+                  summary: ERC20InvalidReceiver
+                  value:
+                    error: "ERC20InvalidReceiver"
+                    message: "送付先アドレスがゼロアドレスの場合に発生します"
+                    params:
+                      receiver: "0x0000000000000000000000000000000000000000"
+                ERC20InvalidSender:
+                  summary: ERC20InvalidSender
+                  value:
+                    error: "ERC20InvalidSender"
+                    message: "送付元アドレスがゼロアドレスの場合に発生します"
+                    params:
+                      sender: "0x0000000000000000000000000000000000000000"
+                ERC20InsufficientBalance:
+                  summary: ERC20InsufficientBalance
+                  value:
+                    error: "ERC20InsufficientBalance"
+                    message: "送付元の残高が送付量より少ない場合に発生します"
+                    params:
+                      sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                      balance: "500000000000000000"
+                      needed: "1000000000000000000"
+
+  /approve:
+    post:
+      operationId: approve
+      summary: spenderに対して呼び出し元のトークンからvalueを使用する許可を与えます
+      description: |
+        IERC20-approveの実装です。
+
+        注意：valueが最大uint256の場合、transferFromでの使用時に許可量は更新されません。これは無限の許可と意味的に同等です。
+
+        要件：
+        - spenderはゼロアドレスであってはなりません。
+      tags:
+        - 書き込み関数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - spender
+                - value
+              properties:
+                spender:
+                  type: string
+                  format: address
+                  description: 使用許可を与えるアドレス
+                value:
+                  type: string
+                  format: uint256
+                  description: 使用を許可するトークン量
+            example:
+              spender: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+              value: "1000000000000000000000"
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+                    description: 操作が成功した場合はtrue
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApprovalEvent'
+              example:
+                result: true
+                events:
+                  - name: "Approval"
+                    owner: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    spender: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+                    value: "1000000000000000000000"
+        '500':
+          description: |
+            この関数で発生する可能性のあるエラーの一覧です。<br>
+            ・**ERC20InvalidApprover**<br>承認者（owner）がゼロアドレスの場合に発生します<br>
+            ・**ERC20InvalidSpender**<br>spenderがゼロアドレスの場合に発生します
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ERC20InvalidApprover:
+                  summary: ERC20InvalidApprover
+                  value:
+                    error: "ERC20InvalidApprover"
+                    message: "承認者（owner）がゼロアドレスの場合に発生します"
+                    params:
+                      approver: "0x0000000000000000000000000000000000000000"
+                ERC20InvalidSpender:
+                  summary: ERC20InvalidSpender
+                  value:
+                    error: "ERC20InvalidSpender"
+                    message: "spenderがゼロアドレスの場合に発生します"
+                    params:
+                      spender: "0x0000000000000000000000000000000000000000"
+
+  /transferFrom:
+    post:
+      operationId: transferFrom
+      summary: 許可メカニズムを使用して、fromからtoへトークンを送付します
+      description: |
+        IERC20-transferFromの実装です。
+
+        許可量の更新を示すApprovalイベントの発行はスキップされます。これはERCでは必須ではありません。
+
+        注意：現在の許可量が最大uint256の場合、許可量は更新されません。
+
+        要件：
+        - fromとtoはゼロアドレスであってはなりません。
+        - fromは少なくともvalue以上の残高を持っている必要があります。
+        - 呼び出し元はfromのトークンに対して少なくともvalue以上の許可量を持っている必要があります。
+      tags:
+        - 書き込み関数
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from
+                - to
+                - value
+              properties:
+                from:
+                  type: string
+                  format: address
+                  description: トークンの送付元アドレス
+                to:
+                  type: string
+                  format: address
+                  description: トークンの送付先アドレス
+                value:
+                  type: string
+                  format: uint256
+                  description: 送付するトークン量
+            example:
+              from: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+              to: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+              value: "1000000000000000000"
+      responses:
+        '200':
+          description: 正常な処理
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: boolean
+                    description: 操作が成功した場合はtrue
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransferEvent'
+              example:
+                result: true
+                events:
+                  - name: "Transfer"
+                    from: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    to: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72"
+                    value: "1000000000000000000"
+        '500':
+          description: |
+            この関数で発生する可能性のあるエラーの一覧です。<br>
+            ・**ERC20InvalidSender**<br>送付元（from）がゼロアドレスの場合に発生します<br>
+            ・**ERC20InvalidReceiver**<br>送付先（to）がゼロアドレスの場合に発生します<br>
+            ・**ERC20InsufficientBalance**<br>送付元の残高が送付量より少ない場合に発生します<br>
+            ・**ERC20InsufficientAllowance**<br>呼び出し元の許可量が送付量より少ない場合に発生します<br>
+            ・**ERC20InvalidApprover**<br>承認者がゼロアドレスの場合に発生します（内部エラー）<br>
+            ・**ERC20InvalidSpender**<br>spenderがゼロアドレスの場合に発生します（内部エラー）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ERC20InvalidSender:
+                  summary: ERC20InvalidSender
+                  value:
+                    error: "ERC20InvalidSender"
+                    message: "送付元（from）がゼロアドレスの場合に発生します"
+                    params:
+                      sender: "0x0000000000000000000000000000000000000000"
+                ERC20InvalidReceiver:
+                  summary: ERC20InvalidReceiver
+                  value:
+                    error: "ERC20InvalidReceiver"
+                    message: "送付先（to）がゼロアドレスの場合に発生します"
+                    params:
+                      receiver: "0x0000000000000000000000000000000000000000"
+                ERC20InsufficientBalance:
+                  summary: ERC20InsufficientBalance
+                  value:
+                    error: "ERC20InsufficientBalance"
+                    message: "送付元の残高が送付量より少ない場合に発生します"
+                    params:
+                      sender: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                      balance: "500000000000000000"
+                      needed: "1000000000000000000"
+                ERC20InsufficientAllowance:
+                  summary: ERC20InsufficientAllowance
+                  value:
+                    error: "ERC20InsufficientAllowance"
+                    message: "呼び出し元の許可量が送付量より少ない場合に発生します"
+                    params:
+                      spender: "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2"
+                      allowance: "500000000000000000"
+                      needed: "1000000000000000000"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラー名
+        message:
+          type: string
+          description: エラーの説明
+        params:
+          type: object
+          description: エラーパラメータ
+          additionalProperties: true
+
+    TransferEvent:
+      type: object
+      description: トークンが転送されたときに発行されます。ゼロ値の転送も含みます。ミント時はfromがゼロアドレス、バーン時はtoがゼロアドレスになります。
+      properties:
+        name:
+          type: string
+          enum: ["Transfer"]
+        from:
+          type: string
+          format: address
+          description: トークンの送付元アドレス（ミント時はゼロアドレス）
+        to:
+          type: string
+          format: address
+          description: トークンの送付先アドレス（バーン時はゼロアドレス）
+        value:
+          type: string
+          format: uint256
+          description: 送付されたトークン量
+
+    ApprovalEvent:
+      type: object
+      description: ownerのspenderに対する許可量が設定されたときに発行されます。valueは新しい許可量です。
+      properties:
+        name:
+          type: string
+          enum: ["Approval"]
+        owner:
+          type: string
+          format: address
+          description: 許可を与えたトークン所有者のアドレス
+        spender:
+          type: string
+          format: address
+          description: 使用許可を受けたアドレス
+        value:
+          type: string
+          format: uint256
+          description: 新しい許可量
+
+    # カスタムエラー定義
+    ERC20InsufficientAllowance:
+      type: object
+      description: spenderの許可量が必要な量より少ない場合に発生するエラーです。transferFromで呼び出し元の許可量が送付しようとしている量より少ない場合にスローされます。
+      properties:
+        spender:
+          type: string
+          format: address
+          description: 許可量が不足しているアドレス
+        allowance:
+          type: string
+          format: uint256
+          description: 現在の許可量
+        needed:
+          type: string
+          format: uint256
+          description: 必要な量
+
+    ERC20InsufficientBalance:
+      type: object
+      description: senderの残高が必要な量より少ない場合に発生するエラーです。transferまたはtransferFromで送付元の残高が送付しようとしている量より少ない場合にスローされます。
+      properties:
+        sender:
+          type: string
+          format: address
+          description: 残高が不足しているアドレス
+        balance:
+          type: string
+          format: uint256
+          description: 現在の残高
+        needed:
+          type: string
+          format: uint256
+          description: 必要な量
+
+    ERC20InvalidApprover:
+      type: object
+      description: 承認者（approve操作のowner）が無効な場合に発生するエラーです。ゼロアドレスからの承認が試みられた場合にスローされます。
+      properties:
+        approver:
+          type: string
+          format: address
+          description: 無効な承認者アドレス
+
+    ERC20InvalidReceiver:
+      type: object
+      description: トークンの受信者が無効な場合に発生するエラーです。ゼロアドレスへの送付が試みられた場合にスローされます。
+      properties:
+        receiver:
+          type: string
+          format: address
+          description: 無効な受信者アドレス
+
+    ERC20InvalidSender:
+      type: object
+      description: トークンの送付元が無効な場合に発生するエラーです。ゼロアドレスからの送付が試みられた場合にスローされます。
+      properties:
+        sender:
+          type: string
+          format: address
+          description: 無効な送付元アドレス
+
+    ERC20InvalidSpender:
+      type: object
+      description: spender（approve操作の対象）が無効な場合に発生するエラーです。ゼロアドレスへの許可付与が試みられた場合にスローされます。
+      properties:
+        spender:
+          type: string
+          format: address
+          description: 無効なspenderアドレス

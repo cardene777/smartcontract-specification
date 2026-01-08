@@ -1,0 +1,192 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+.heroBanner {
+  padding: 6rem 0 5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: #f4ebe3;
+  border-bottom: 1px solid #eaddcf;
+}
+
+.heroBanner h1 {
+  font-size: 2.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  color: #020826;
+}
+
+.heroBanner p {
+  font-size: 1.1rem;
+  color: #716040;
+  font-weight: 400;
+}
+
+@media screen and (max-width: 966px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* カードの固定幅レスポンシブレイアウト */
+.cardRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 0;
+}
+
+.cardCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.contractCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 200px;
+}
+
+.cardBody {
+  flex: 1;
+}
+
+.cardFooter {
+  margin-top: auto;
+}
+
+/* カテゴリセクション */
+.categorySection {
+  margin-top: 48px;
+  margin-bottom: 60px;
+}
+
+.categoryTitle {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  font-size: 1.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  position: relative;
+  color: #020826;
+}
+
+.categoryTitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 4px;
+  background: #8c7851;
+  border-radius: 2px;
+}
+
+:global(html[data-theme='dark']) .categoryTitle {
+  color: #fffffe;
+}
+
+:global(html[data-theme='dark']) .categoryTitle::after {
+  background: #ffc0ad;
+}
+
+/* カテゴリ内のカードの縦間隔 */
+.categorySection :global(.col) {
+  margin-bottom: 24px;
+}
+
+/* カード内の余白調整 */
+.categorySection :global(.card__header) {
+  padding: 1.75rem 1.75rem 1rem;
+}
+
+.categorySection :global(.card__header h3) {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #020826;
+  letter-spacing: -0.01em;
+}
+
+:global(html[data-theme='dark']) .categorySection :global(.card__header h3) {
+  color: #fffffe;
+}
+
+.categorySection :global(.card__body) {
+  padding: 0 1.75rem 1.5rem;
+}
+
+.categorySection :global(.card__body p) {
+  margin: 0;
+  color: #716040;
+  line-height: 1.65;
+  font-size: 0.925rem;
+
+  /* 説明文を2行に制限 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(html[data-theme='dark']) .categorySection :global(.card__body p) {
+  color: #fff3ec;
+}
+
+.categorySection :global(.card__footer) {
+  padding: 1rem 1.75rem 1.75rem;
+}
+
+/* ダークモード時のヒーローバナー */
+:global(html[data-theme='dark']) .heroBanner {
+  background: #483632;
+  border-bottom: 1px solid #7d6760;
+}
+
+:global(html[data-theme='dark']) .heroBanner h1 {
+  color: #fffffe;
+}
+
+:global(html[data-theme='dark']) .heroBanner p {
+  color: #fff3ec;
+}
+
+/* ボタンスタイル */
+.specButton {
+  height: 40px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+/* コントラクト数表示 */
+.contractCount {
+  font-size: 0.95rem;
+  font-weight: 400;
+  margin-top: 1.5rem;
+  color: #716040;
+  letter-spacing: 0.03em;
+}
+
+:global(html[data-theme='dark']) .contractCount {
+  color: #fff3ec;
+}

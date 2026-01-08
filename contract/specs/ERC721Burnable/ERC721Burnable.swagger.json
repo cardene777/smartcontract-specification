@@ -1,0 +1,17 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC721Burnable Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC721Burnable コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/burn": {
+      "post": {
+        "summary": "burn",
+        "description": "指定されたtokenIdを焼却(破棄)します。",
+        "operationId": "burn"
+      }
+    }
+  }
+}

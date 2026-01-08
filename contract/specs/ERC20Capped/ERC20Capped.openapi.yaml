@@ -1,0 +1,131 @@
+# file: docs/contract/specs/ERC20Capped/ERC20Capped.openapi.yaml
+
+openapi: 3.0.3
+info:
+  title: "ERC20Capped Solidity Interface"
+  version: "1.0.0"
+  description: |
+    ERC20Capped コントラクトの Solidity インターフェイスを OpenAPI 形式で表現した仕様です。
+
+    このコントラクトは、トークンの供給量に上限を追加するERC20の拡張です。
+    上限(cap)はコンストラクタで設定され、変更不可能(immutable)です。
+    総供給量が上限を超えるmintは失敗します。
+
+    このコントラクトは以下のコントラクトを継承しています:
+    - ERC20
+
+tags:
+  - name: 読み取り関数
+  - name: エラー
+
+x-tagGroups:
+  - name: 関数
+    tags:
+      - 読み取り関数
+  - name: エラー
+    tags:
+      - エラー
+
+paths:
+  /cap:
+    get:
+      summary: "cap"
+      description: |
+        トークンの総供給量の上限を取得します。
+
+        この値はコンストラクタで設定され、変更できません。
+        総供給量がこの値を超えることはできません。
+      operationId: cap
+      tags:
+        - 読み取り関数
+      responses:
+        "200":
+          description: "正常終了時のレスポンスです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result0:
+                    type: string
+                    description: "総供給量の上限を返します。"
+                    example: "1000000000000000000000000"
+
+  /errors/ERC20ExceededCap:
+    get:
+      summary: "ERC20ExceededCap"
+      description: |
+        総供給量の上限を超えた時に返されるエラーです。
+
+        mint操作により総供給量がcapを超える場合に発生します。
+
+        **パラメータ:**
+        - `increasedSupply` (uint256): 増加後の総供給量
+        - `cap` (uint256): 設定されている上限値
+      operationId: error_ERC20ExceededCap
+      tags:
+        - エラー
+      responses:
+        "200":
+          description: "総供給量の上限を超えた時に返されるエラーです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "ERC20ExceededCap"
+                  parameters:
+                    type: object
+                    properties:
+                      increasedSupply:
+                        type: string
+                        description: "増加後の総供給量を指定します。"
+                      cap:
+                        type: string
+                        description: "設定されている上限値を指定します。"
+
+  /errors/ERC20InvalidCap:
+    get:
+      summary: "ERC20InvalidCap"
+      description: |
+        無効な上限値が指定された時に返されるエラーです。
+
+        コンストラクタでcapに0が指定された場合に発生します。
+
+        **パラメータ:**
+        - `cap` (uint256): 無効な上限値
+      operationId: error_ERC20InvalidCap
+      tags:
+        - エラー
+      responses:
+        "200":
+          description: "無効な上限値が指定された時に返されるエラーです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "ERC20InvalidCap"
+                  parameters:
+                    type: object
+                    properties:
+                      cap:
+                        type: string
+                        description: "無効な上限値を指定します。"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: "コントラクト呼び出し時のエラー情報を表現する共通スキーマです。"
+      properties:
+        message:
+          type: string
+          description: "カスタムエラー名または `revert` / `require` のメッセージ文字列をそのまま格納します。"
+        data:
+          type: object
+          description: "追加情報(任意)です。"

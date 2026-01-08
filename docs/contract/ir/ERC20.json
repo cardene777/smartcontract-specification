@@ -1,0 +1,435 @@
+{
+  "contractName": "ERC20",
+  "version": "1.0.0",
+  "metadata": {
+    "title": "ERC20",
+    "description": "ERC20トークン標準の実装コントラクトです。\n\nこのコントラクトはOpenZeppelin Contracts v5.4.0に基づくERC20トークンの基本実装を提供します。トークンの作成方法には依存せず、派生コントラクトで_mint関数を使用して供給メカニズムを追加する必要があります。\n\nデフォルトの小数点以下桁数は18で、EtherとWeiの関係を模倣しています。この値を変更するにはdecimals関数をオーバーライドしてください。\n\n関数は失敗時にfalseを返すのではなくrevertするというOpenZeppelinのガイドラインに従っています。",
+    "category": "Token",
+    "license": "MIT",
+    "solidityVersion": "^0.8.20"
+  },
+  "readFunctions": [
+    {
+      "name": "name",
+      "selector": "0x06fdde03",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "description": "トークンの名前"
+        }
+      ],
+      "documentation": {
+        "summary": "トークンの名前を返します。",
+        "details": "コンストラクタで設定された名前を返します。この値はコントラクトのデプロイ後は変更できません。"
+      }
+    },
+    {
+      "name": "symbol",
+      "selector": "0x95d89b41",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "string",
+          "description": "トークンのシンボル"
+        }
+      ],
+      "documentation": {
+        "summary": "トークンのシンボル（通常は名前の短縮版）を返します。",
+        "details": "コンストラクタで設定されたシンボルを返します。この値はコントラクトのデプロイ後は変更できません。"
+      }
+    },
+    {
+      "name": "decimals",
+      "selector": "0x313ce567",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8",
+          "description": "トークンの小数点以下桁数"
+        }
+      ],
+      "documentation": {
+        "summary": "ユーザー表示用の小数点以下桁数を返します。",
+        "details": "例えば、decimalsが2の場合、505トークンの残高はユーザーに5.05（505 / 10 ** 2）として表示されるべきです。\n\nトークンは通常18の値を選択し、EtherとWeiの関係を模倣します。これはこの関数が返すデフォルト値であり、オーバーライドされない限り変更されません。\n\n注意：この情報は表示目的にのみ使用され、IERC20-balanceOfやIERC20-transferを含むコントラクトの算術演算には一切影響しません。"
+      }
+    },
+    {
+      "name": "totalSupply",
+      "selector": "0x18160ddd",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "description": "存在するトークンの総量"
+        }
+      ],
+      "documentation": {
+        "summary": "存在するトークンの総量を返します。",
+        "details": "IERC20インターフェースの実装です。ミントとバーンによって増減します。"
+      }
+    },
+    {
+      "name": "balanceOf",
+      "selector": "0x70a08231",
+      "stateMutability": "view",
+      "inputs": [
+        {
+          "name": "account",
+          "type": "address",
+          "description": "残高を照会するアドレス"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "description": "指定されたアドレスが所有するトークン量"
+        }
+      ],
+      "documentation": {
+        "summary": "指定されたアドレスが所有するトークン量を返します。",
+        "details": "IERC20インターフェースの実装です。"
+      }
+    },
+    {
+      "name": "allowance",
+      "selector": "0xdd62ed3e",
+      "stateMutability": "view",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "description": "トークン所有者のアドレス"
+        },
+        {
+          "name": "spender",
+          "type": "address",
+          "description": "使用許可を受けたアドレス"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256",
+          "description": "spenderがownerの代わりに使用できる残りのトークン量"
+        }
+      ],
+      "documentation": {
+        "summary": "spenderがownerの代わりに使用できる残りのトークン量を返します。",
+        "details": "IERC20インターフェースの実装です。この値はapproveまたはtransferFromが呼び出されると変更されます。"
+      }
+    }
+  ],
+  "writeFunctions": [
+    {
+      "name": "transfer",
+      "selector": "0xa9059cbb",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "name": "to",
+          "type": "address",
+          "description": "トークンの送付先アドレス"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "description": "送付するトークン量"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "description": "操作が成功した場合はtrue"
+        }
+      ],
+      "documentation": {
+        "summary": "呼び出し元のアカウントから指定されたアドレスへトークンを送付します。",
+        "details": "IERC20-transferの実装です。\n\n要件：\n- toはゼロアドレスであってはなりません。\n- 呼び出し元は少なくともvalue以上の残高を持っている必要があります。"
+      },
+      "errors": [
+        {
+          "name": "ERC20InvalidReceiver",
+          "description": "送付先アドレスがゼロアドレスの場合に発生します"
+        },
+        {
+          "name": "ERC20InvalidSender",
+          "description": "送付元アドレスがゼロアドレスの場合に発生します（内部エラー）"
+        },
+        {
+          "name": "ERC20InsufficientBalance",
+          "description": "送付元の残高が送付量より少ない場合に発生します"
+        }
+      ],
+      "emits": [
+        {
+          "name": "Transfer",
+          "description": "トークンの送付が成功した場合に発行されます"
+        }
+      ]
+    },
+    {
+      "name": "approve",
+      "selector": "0x095ea7b3",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "name": "spender",
+          "type": "address",
+          "description": "使用許可を与えるアドレス"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "description": "使用を許可するトークン量"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "description": "操作が成功した場合はtrue"
+        }
+      ],
+      "documentation": {
+        "summary": "spenderに対して呼び出し元のトークンからvalueを使用する許可を与えます。",
+        "details": "IERC20-approveの実装です。\n\n注意：valueが最大uint256の場合、transferFromでの使用時に許可量は更新されません。これは無限の許可と意味的に同等です。\n\n要件：\n- spenderはゼロアドレスであってはなりません。"
+      },
+      "errors": [
+        {
+          "name": "ERC20InvalidApprover",
+          "description": "承認者（owner）がゼロアドレスの場合に発生します"
+        },
+        {
+          "name": "ERC20InvalidSpender",
+          "description": "spenderがゼロアドレスの場合に発生します"
+        }
+      ],
+      "emits": [
+        {
+          "name": "Approval",
+          "description": "許可量の設定が成功した場合に発行されます"
+        }
+      ]
+    },
+    {
+      "name": "transferFrom",
+      "selector": "0x23b872dd",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        {
+          "name": "from",
+          "type": "address",
+          "description": "トークンの送付元アドレス"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "description": "トークンの送付先アドレス"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "description": "送付するトークン量"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool",
+          "description": "操作が成功した場合はtrue"
+        }
+      ],
+      "documentation": {
+        "summary": "許可メカニズムを使用して、fromからtoへトークンを送付します。",
+        "details": "IERC20-transferFromの実装です。\n\n許可量の更新を示すApprovalイベントの発行はスキップされます。これはERCでは必須ではありません。\n\n注意：現在の許可量が最大uint256の場合、許可量は更新されません。\n\n要件：\n- fromとtoはゼロアドレスであってはなりません。\n- fromは少なくともvalue以上の残高を持っている必要があります。\n- 呼び出し元はfromのトークンに対して少なくともvalue以上の許可量を持っている必要があります。"
+      },
+      "errors": [
+        {
+          "name": "ERC20InvalidSender",
+          "description": "送付元（from）がゼロアドレスの場合に発生します"
+        },
+        {
+          "name": "ERC20InvalidReceiver",
+          "description": "送付先（to）がゼロアドレスの場合に発生します"
+        },
+        {
+          "name": "ERC20InsufficientBalance",
+          "description": "送付元の残高が送付量より少ない場合に発生します"
+        },
+        {
+          "name": "ERC20InsufficientAllowance",
+          "description": "呼び出し元の許可量が送付量より少ない場合に発生します"
+        },
+        {
+          "name": "ERC20InvalidApprover",
+          "description": "承認者がゼロアドレスの場合に発生します（内部エラー）"
+        },
+        {
+          "name": "ERC20InvalidSpender",
+          "description": "spenderがゼロアドレスの場合に発生します（内部エラー）"
+        }
+      ],
+      "emits": [
+        {
+          "name": "Transfer",
+          "description": "トークンの送付が成功した場合に発行されます"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Transfer",
+      "inputs": [
+        {
+          "name": "from",
+          "type": "address",
+          "indexed": true,
+          "description": "トークンの送付元アドレス（ミント時はゼロアドレス）"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "indexed": true,
+          "description": "トークンの送付先アドレス（バーン時はゼロアドレス）"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "description": "送付されたトークン量"
+        }
+      ],
+      "documentation": {
+        "summary": "トークンが転送されたときに発行されます。ゼロ値の転送も含みます。",
+        "details": "ミント時はfromがゼロアドレス、バーン時はtoがゼロアドレスになります。"
+      }
+    },
+    {
+      "name": "Approval",
+      "inputs": [
+        {
+          "name": "owner",
+          "type": "address",
+          "indexed": true,
+          "description": "許可を与えたトークン所有者のアドレス"
+        },
+        {
+          "name": "spender",
+          "type": "address",
+          "indexed": true,
+          "description": "使用許可を受けたアドレス"
+        },
+        {
+          "name": "value",
+          "type": "uint256",
+          "indexed": false,
+          "description": "新しい許可量"
+        }
+      ],
+      "documentation": {
+        "summary": "ownerのspenderに対する許可量が設定されたときに発行されます。",
+        "details": "valueは新しい許可量です。"
+      }
+    }
+  ],
+  "customErrors": {
+    "ERC20InsufficientAllowance": {
+      "name": "ERC20InsufficientAllowance",
+      "inputs": [
+        {
+          "name": "spender",
+          "type": "address",
+          "description": "許可量が不足しているアドレス"
+        },
+        {
+          "name": "allowance",
+          "type": "uint256",
+          "description": "現在の許可量"
+        },
+        {
+          "name": "needed",
+          "type": "uint256",
+          "description": "必要な量"
+        }
+      ],
+      "description": "spenderの許可量が必要な量より少ない場合に発生するエラーです。transferFromで呼び出し元の許可量が送付しようとしている量より少ない場合にスローされます。"
+    },
+    "ERC20InsufficientBalance": {
+      "name": "ERC20InsufficientBalance",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "address",
+          "description": "残高が不足しているアドレス"
+        },
+        {
+          "name": "balance",
+          "type": "uint256",
+          "description": "現在の残高"
+        },
+        {
+          "name": "needed",
+          "type": "uint256",
+          "description": "必要な量"
+        }
+      ],
+      "description": "senderの残高が必要な量より少ない場合に発生するエラーです。transferまたはtransferFromで送付元の残高が送付しようとしている量より少ない場合にスローされます。"
+    },
+    "ERC20InvalidApprover": {
+      "name": "ERC20InvalidApprover",
+      "inputs": [
+        {
+          "name": "approver",
+          "type": "address",
+          "description": "無効な承認者アドレス"
+        }
+      ],
+      "description": "承認者（approve操作のowner）が無効な場合に発生するエラーです。ゼロアドレスからの承認が試みられた場合にスローされます。"
+    },
+    "ERC20InvalidReceiver": {
+      "name": "ERC20InvalidReceiver",
+      "inputs": [
+        {
+          "name": "receiver",
+          "type": "address",
+          "description": "無効な受信者アドレス"
+        }
+      ],
+      "description": "トークンの受信者が無効な場合に発生するエラーです。ゼロアドレスへの送付が試みられた場合にスローされます。"
+    },
+    "ERC20InvalidSender": {
+      "name": "ERC20InvalidSender",
+      "inputs": [
+        {
+          "name": "sender",
+          "type": "address",
+          "description": "無効な送付元アドレス"
+        }
+      ],
+      "description": "トークンの送付元が無効な場合に発生するエラーです。ゼロアドレスからの送付が試みられた場合にスローされます。"
+    },
+    "ERC20InvalidSpender": {
+      "name": "ERC20InvalidSpender",
+      "inputs": [
+        {
+          "name": "spender",
+          "type": "address",
+          "description": "無効なspenderアドレス"
+        }
+      ],
+      "description": "spender（approve操作の対象）が無効な場合に発生するエラーです。ゼロアドレスへの許可付与が試みられた場合にスローされます。"
+    }
+  }
+}

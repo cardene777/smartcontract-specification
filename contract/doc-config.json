@@ -1,0 +1,77 @@
+{
+  "categories": {
+    "ERC20 トークン": [
+      "ERC20",
+      "ERC20Burnable",
+      "ERC20Pausable",
+      "ERC20Permit",
+      "ERC20Votes",
+      "ERC20Capped"
+    ],
+    "ERC721 NFT": [
+      "ERC721",
+      "ERC721Burnable",
+      "ERC721Pausable",
+      "ERC721Enumerable",
+      "ERC721URIStorage",
+      "ERC721Royalty"
+    ]
+  },
+  "descriptions": {
+    "ERC20": {
+      "overview": "ERC20標準トークンの基本実装",
+      "detail": "代替可能トークンの標準規格。転送、承認、残高照会などの基本機能を提供します。"
+    },
+    "ERC20Burnable": {
+      "overview": "トークン焼却機能を持つERC20",
+      "detail": "トークン保有者が自分のトークンまたは承認されたトークンを焼却できる拡張機能。"
+    },
+    "ERC20Pausable": {
+      "overview": "一時停止機能を持つERC20",
+      "detail": "緊急時にトークン転送を一時停止できる機能を追加したERC20実装。"
+    },
+    "ERC20Permit": {
+      "overview": "署名ベース承認機能を持つERC20",
+      "detail": "EIP-2612に準拠した、オフチェーン署名によるallowance設定機能。"
+    },
+    "ERC20Votes": {
+      "overview": "投票・委任機能を持つERC20",
+      "detail": "ガバナンストークンとして使用可能な投票権の委任とチェックポイント機能。"
+    },
+    "ERC20Capped": {
+      "overview": "供給量上限を持つERC20",
+      "detail": "トークンの総供給量に上限を設定できるERC20実装。"
+    },
+    "ERC721": {
+      "overview": "ERC721標準NFTの基本実装",
+      "detail": "非代替性トークン（NFT）の標準規格。一意なトークンの所有、転送、承認機能を提供します。"
+    },
+    "ERC721Burnable": {
+      "overview": "NFT焼却機能を持つERC721",
+      "detail": "トークン保有者がNFTを焼却（永久削除）できる機能を追加したERC721実装。"
+    },
+    "ERC721Pausable": {
+      "overview": "一時停止機能を持つERC721",
+      "detail": "緊急時にNFT転送を一時停止できる機能を追加したERC721実装。"
+    },
+    "ERC721Enumerable": {
+      "overview": "列挙機能を持つERC721",
+      "detail": "全トークンや所有者のトークンを列挙できる機能を追加したERC721実装。"
+    },
+    "ERC721URIStorage": {
+      "overview": "ストレージベースURI管理を持つERC721",
+      "detail": "各トークンのメタデータURIをオンチェーンストレージで管理するERC721実装。"
+    },
+    "ERC721Royalty": {
+      "overview": "ロイヤリティ標準を持つERC721",
+      "detail": "EIP-2981に準拠した、NFT販売時のロイヤリティ情報を提供するERC721実装。"
+    }
+  },
+  "projectTitle": "OpenZeppelin ERC20 & ERC721 契約仕様書",
+  "projectName": "OpenZeppelin Contracts",
+  "tagline": "Ethereum スマートコントラクトのセキュアな実装",
+  "projectDescription": "OpenZeppelinが提供するERC20とERC721トークン標準の完全な実装仕様書。セキュアで監査済みのスマートコントラクトライブラリです。",
+  "githubOrg": "OpenZeppelin",
+  "repoName": "openzeppelin-contracts",
+  "primaryColor": "#1890ff"
+}

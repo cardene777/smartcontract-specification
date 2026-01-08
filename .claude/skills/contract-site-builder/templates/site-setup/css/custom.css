@@ -1,0 +1,509 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+/* Custom Color Scheme - Warm & Elegant */
+:root {
+  /* ライトモード: 温かく優雅な配色 */
+  --color-background: #f9f4ef;
+  --color-headline: #020826;
+  --color-paragraph: #716040;
+  --color-button: #1890ff;
+  --color-button-text: #fffffe;
+  --color-stroke: #020826;
+  --color-main: #fffffe;
+  --color-highlight: #1890ff;
+  --color-secondary: #eaddcf;
+  --color-tertiary: #f25042;
+
+  --ifm-color-primary: #1890ff;
+  --ifm-color-primary-dark: #1581e5;
+  --ifm-color-primary-darker: #147ad8;
+  --ifm-color-primary-darkest: #1064b2;
+  --ifm-color-primary-light: #2f9bff;
+  --ifm-color-primary-lighter: #3aa0ff;
+  --ifm-color-primary-lightest: #5db1ff;
+  --ifm-code-font-size: 95%;
+
+  --ifm-background-color: #fdfcfa;
+  --ifm-background-surface-color: #fffffe;
+  --ifm-navbar-background-color: rgba(255, 255, 254, 0.98);
+  --ifm-footer-background-color: #fdfcfa;
+  --ifm-font-color-base: #716040;
+
+  /* タイポグラフィ */
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-line-height-base: 1.7;
+}
+
+/* Dark mode - 温かみのあるダークテーマ */
+html[data-theme='dark'] {
+  /* ダークモード: リッチで温かい配色 */
+  --color-background: #55423d;
+  --color-headline: #fffffe;
+  --color-paragraph: #fff3ec;
+  --color-button: #ffc0ad;
+  --color-button-text: #271c19;
+  --color-stroke: #140d0b;
+  --color-main: #fff3ec;
+  --color-highlight: #e78fb3;
+  --color-secondary: #ffc0ad;
+  --color-tertiary: #9656a1;
+
+  --ifm-color-primary: #ffc0ad;
+  --ifm-color-primary-dark: #ffad94;
+  --ifm-color-primary-darker: #ffa489;
+  --ifm-color-primary-darkest: #ff8964;
+  --ifm-color-primary-light: #ffd3c6;
+  --ifm-color-primary-lighter: #ffdcd1;
+  --ifm-color-primary-lightest: #fff3ef;
+
+  --ifm-background-color: #55423d;
+  --ifm-background-surface-color: #6b5650;
+  --ifm-navbar-background-color: rgba(85, 66, 61, 0.98);
+  --ifm-footer-background-color: #483632;
+  --ifm-font-color-base: #fff3ec;
+
+  --color-border: #7d6760;
+}
+
+/* ナビゲーションバーのモダン化 */
+.navbar {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme='dark'] .navbar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid #7d6760;
+}
+
+/* カードのエレガントなデザイン */
+.card {
+  border: 1px solid #eaddcf;
+  box-shadow: 0 2px 8px rgba(140, 120, 81, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fffffe;
+  border-radius: 8px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(140, 120, 81, 0.15);
+  border-color: #1890ff;
+}
+
+html[data-theme='dark'] .card {
+  background: #6b5650;
+  border: 1px solid #7d6760;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme='dark'] .card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-color: #ffc0ad;
+}
+
+/* ボタンのエレガントなデザイン */
+.button--primary {
+  background: #1890ff;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  color: #fffffe;
+}
+
+.button--primary:hover {
+  background: #1581e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(140, 120, 81, 0.3);
+  color: #fffffe;
+}
+
+html[data-theme='dark'] .button--primary {
+  background: #ffc0ad;
+  color: #271c19;
+}
+
+html[data-theme='dark'] .button--primary:hover {
+  background: #ffad94;
+  box-shadow: 0 4px 12px rgba(255, 192, 173, 0.4);
+  color: #271c19;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+html[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Swagger UI ダークモード対応
+   ======================================== */
+
+/* 全体の背景 - 白い部分を消す */
+html[data-theme='dark'] .swagger-ui {
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .wrapper {
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .scheme-container {
+  background: #55423d !important;
+  box-shadow: none !important;
+}
+
+/* infoセクション全体の背景を透明に */
+html[data-theme='dark'] .swagger-ui .information-container {
+  background: transparent !important;
+}
+
+/* テキスト色 - 説明文など */
+html[data-theme='dark'] .swagger-ui .info .title,
+html[data-theme='dark'] .swagger-ui .info p,
+html[data-theme='dark'] .swagger-ui .info .description,
+html[data-theme='dark'] .swagger-ui .info .description p,
+html[data-theme='dark'] .swagger-ui .info .description .markdown,
+html[data-theme='dark'] .swagger-ui .info .description .markdown p,
+html[data-theme='dark'] .swagger-ui .markdown p,
+html[data-theme='dark'] .swagger-ui .renderedMarkdown p {
+  color: #fff3ec !important;
+}
+
+/* タイトル */
+html[data-theme='dark'] .swagger-ui .info .title {
+  color: #fffffe !important;
+}
+
+/* セクションヘッダー（Read Functions等） */
+html[data-theme='dark'] .swagger-ui .opblock-tag {
+  color: #fff3ec !important;
+  border-bottom: 1px solid #7d6760 !important;
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock-tag:hover {
+  background: rgba(255, 192, 173, 0.1) !important;
+}
+
+/* トグル矢印を白に */
+html[data-theme='dark'] .swagger-ui .opblock-tag svg,
+html[data-theme='dark'] .swagger-ui .opblock-tag .arrow,
+html[data-theme='dark'] .swagger-ui .expand-operation svg,
+html[data-theme='dark'] .swagger-ui svg.arrow {
+  fill: #fff3ec !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock-tag button {
+  background: transparent !important;
+}
+
+/* Serversセクション - 背景を修正 */
+html[data-theme='dark'] .swagger-ui .servers-title,
+html[data-theme='dark'] .swagger-ui .servers label,
+html[data-theme='dark'] .swagger-ui .servers > label {
+  color: #fff3ec !important;
+}
+
+html[data-theme='dark'] .swagger-ui .servers {
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .servers select {
+  background: #6b5650 !important;
+  color: #fff3ec !important;
+  border: 1px solid #7d6760 !important;
+}
+
+/* オペレーションブロック（トグル展開時） */
+html[data-theme='dark'] .swagger-ui .opblock {
+  background: transparent !important;
+  border-color: #7d6760 !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock .opblock-summary {
+  border-color: #7d6760 !important;
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock .opblock-summary-path,
+html[data-theme='dark'] .swagger-ui .opblock .opblock-summary-description {
+  color: #fff3ec !important;
+}
+
+/* 展開時のコンテンツエリア */
+html[data-theme='dark'] .swagger-ui .opblock-body {
+  background: #55423d !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock-body pre {
+  background: #3d2d29 !important;
+  color: #fff3ec !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock-section-header {
+  background: #4a3a36 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock-section-header h4,
+html[data-theme='dark'] .swagger-ui .opblock-section-header label {
+  color: #fff3ec !important;
+}
+
+/* GET/POST等のメソッドラベル背景 */
+html[data-theme='dark'] .swagger-ui .opblock.opblock-get {
+  background: rgba(97, 175, 254, 0.1) !important;
+  border-color: #61affe !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock.opblock-get .opblock-summary {
+  background: rgba(97, 175, 254, 0.1) !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock.opblock-post {
+  background: rgba(73, 204, 144, 0.1) !important;
+  border-color: #49cc90 !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock.opblock-put {
+  background: rgba(252, 161, 48, 0.1) !important;
+  border-color: #fca130 !important;
+}
+
+html[data-theme='dark'] .swagger-ui .opblock.opblock-delete {
+  background: rgba(249, 62, 62, 0.1) !important;
+  border-color: #f93e3e !important;
+}
+
+/* パラメータテーブル */
+html[data-theme='dark'] .swagger-ui .parameters-col_name,
+html[data-theme='dark'] .swagger-ui .parameters-col_description,
+html[data-theme='dark'] .swagger-ui .parameter__name,
+html[data-theme='dark'] .swagger-ui .parameter__type,
+html[data-theme='dark'] .swagger-ui table thead tr th,
+html[data-theme='dark'] .swagger-ui table tbody tr td {
+  color: #fff3ec !important;
+}
+
+html[data-theme='dark'] .swagger-ui table {
+  border-color: #7d6760 !important;
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui table thead tr {
+  background: #4a3a36 !important;
+}
+
+html[data-theme='dark'] .swagger-ui table tbody tr {
+  background: #55423d !important;
+}
+
+html[data-theme='dark'] .swagger-ui table tbody tr:nth-child(even) {
+  background: #4a3a36 !important;
+}
+
+/* モデル/スキーマ */
+html[data-theme='dark'] .swagger-ui .model-title,
+html[data-theme='dark'] .swagger-ui .model,
+html[data-theme='dark'] .swagger-ui .model-box {
+  color: #fff3ec !important;
+  background: transparent !important;
+}
+
+/* 入力フィールド */
+html[data-theme='dark'] .swagger-ui input[type="text"],
+html[data-theme='dark'] .swagger-ui textarea {
+  background: #6b5650 !important;
+  color: #fff3ec !important;
+  border: 1px solid #7d6760 !important;
+}
+
+/* レスポンスセクション */
+html[data-theme='dark'] .swagger-ui .responses-wrapper,
+html[data-theme='dark'] .swagger-ui .response {
+  background: transparent !important;
+}
+
+html[data-theme='dark'] .swagger-ui .responses-header,
+html[data-theme='dark'] .swagger-ui .response-col_status,
+html[data-theme='dark'] .swagger-ui .response-col_description {
+  color: #fff3ec !important;
+}
+
+/* コードブロック */
+html[data-theme='dark'] .swagger-ui .highlight-code,
+html[data-theme='dark'] .swagger-ui pre.microlight {
+  background: #3d2d29 !important;
+  color: #fff3ec !important;
+}
+
+/* ボタン */
+html[data-theme='dark'] .swagger-ui .btn {
+  background: #1890ff !important;
+  color: #fffffe !important;
+  border: none !important;
+}
+
+html[data-theme='dark'] .swagger-ui .btn:hover {
+  background: #1581e5 !important;
+}
+
+html[data-theme='dark'] .swagger-ui .btn.execute {
+  background: #49cc90 !important;
+  color: #fff !important;
+}
+
+html[data-theme='dark'] .swagger-ui .btn.cancel {
+  background: #f93e3e !important;
+  color: #fff !important;
+}
+
+/* リンク色 */
+html[data-theme='dark'] .swagger-ui a {
+  color: #ffc0ad !important;
+}
+
+/* URL/パスのスタイル */
+html[data-theme='dark'] .swagger-ui .info .base-url {
+  color: #ffc0ad !important;
+}
+
+/* JSONビュー */
+html[data-theme='dark'] .swagger-ui .json-schema-form-item input {
+  background: #6b5650 !important;
+  color: #fff3ec !important;
+}
+
+/* 全ての白背景を消す */
+html[data-theme='dark'] .swagger-ui .opblock-description-wrapper,
+html[data-theme='dark'] .swagger-ui .opblock-external-docs-wrapper,
+html[data-theme='dark'] .swagger-ui .opblock-title_normal {
+  background: transparent !important;
+  color: #fff3ec !important;
+}
+
+/* コピー・ダウンロードボタン */
+html[data-theme='dark'] .swagger-ui .copy-to-clipboard,
+html[data-theme='dark'] .swagger-ui .download-contents {
+  background: #6b5650 !important;
+}
+
+html[data-theme='dark'] .swagger-ui .copy-to-clipboard button,
+html[data-theme='dark'] .swagger-ui .download-contents button {
+  background: transparent !important;
+}
+
+/* "No parameters" テキスト */
+html[data-theme='dark'] .swagger-ui .opblock-description-wrapper p,
+html[data-theme='dark'] .swagger-ui .opblock-body .opblock-section .opblock-section-header + div,
+html[data-theme='dark'] .swagger-ui .parameters-container .parameters,
+html[data-theme='dark'] .swagger-ui .opblock-body > div > div {
+  color: #fff3ec !important;
+}
+
+/* "Example Value" / "Schema" タブ */
+html[data-theme='dark'] .swagger-ui .tab li,
+html[data-theme='dark'] .swagger-ui .tab li button,
+html[data-theme='dark'] .swagger-ui .tablinks,
+html[data-theme='dark'] .swagger-ui .response-control-media-type__title,
+html[data-theme='dark'] .swagger-ui .response-control-media-type--select-label {
+  color: #fff3ec !important;
+}
+
+html[data-theme='dark'] .swagger-ui .tab li.active,
+html[data-theme='dark'] .swagger-ui .tab li button.active {
+  color: #ffc0ad !important;
+}
+
+/* モデル内のテキスト全般 */
+html[data-theme='dark'] .swagger-ui .model-container,
+html[data-theme='dark'] .swagger-ui .model span,
+html[data-theme='dark'] .swagger-ui .model .prop,
+html[data-theme='dark'] .swagger-ui .model .prop-type,
+html[data-theme='dark'] .swagger-ui .model .prop-format,
+html[data-theme='dark'] .swagger-ui .model-toggle,
+html[data-theme='dark'] .swagger-ui .model-box-control {
+  color: #fff3ec !important;
+}
+
+/* Linksセクションを非表示（全て "No links" のため） */
+.swagger-ui .responses-wrapper .response .response-col_links,
+.swagger-ui .responses-wrapper thead .response-col_links {
+  display: none !important;
+}
+
+/* ========================================
+   Swagger UI 共通 - 背景色修正
+   ======================================== */
+
+/* 全体の背景を透明に（ライト・ダーク共通） */
+.swagger-ui {
+  background: transparent !important;
+}
+
+.swagger-ui .wrapper {
+  background: transparent !important;
+}
+
+.swagger-ui .information-container {
+  background: transparent !important;
+}
+
+.swagger-ui .info {
+  background: transparent !important;
+}
+
+.swagger-ui .info hgroup.main {
+  background: transparent !important;
+}
+
+.swagger-ui .scheme-container {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* バッジ周りのコンテナ背景を透明に */
+.swagger-ui .info .main,
+.swagger-ui .info > div,
+.swagger-ui .topbar {
+  background: transparent !important;
+}
+
+/* バージョン・OASバッジの親要素の背景を完全に透明化 */
+.swagger-ui .info hgroup,
+.swagger-ui .info hgroup.main,
+.swagger-ui .info hgroup.main > *,
+.swagger-ui .info .title,
+.swagger-ui .info .title small,
+.swagger-ui .info .title small pre,
+.swagger-ui .info .version-stamp,
+.swagger-ui .info__title,
+.swagger-ui .info__version,
+.swagger-ui .info > hgroup,
+.swagger-ui .info > hgroup > * {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* バッジ自体のスタイルは維持（Swagger UIデフォルト色を使用） */
+.swagger-ui .info .title small pre.version {
+  background-color: #89bf04 !important; /* Swagger UI default green */
+}
+
+.swagger-ui .version-pragma {
+  background-color: #3b4151 !important; /* Swagger UI default dark */
+}

@@ -1,0 +1,152 @@
+# file: docs/contract/specs/ERC20Votes/ERC20Votes.openapi.yaml
+
+openapi: 3.0.3
+info:
+  title: "ERC20Votes Solidity Interface"
+  version: "1.0.0"
+  description: |
+    ERC20Votes コントラクトの Solidity インターフェイスを OpenAPI 形式で表現した仕様です。
+
+    このコントラクトは、Compound式の投票と委任をサポートするERC-20の拡張です。
+    各アカウントの投票権の履歴(チェックポイント)を保持します。投票権は、delegate関数を直接呼び出すか、
+    delegateBySig関数で署名を提供することで委任できます。投票権はgetVotesおよびgetPastVotesで照会可能です。
+
+    デフォルトでは、トークン残高は投票権としてカウントされません。これにより転送コストが削減されます。
+    欠点は、チェックポイントを有効化して投票権を追跡するために、ユーザーが自分自身に委任する必要があることです。
+
+    このコントラクトは以下のコントラクトを継承しています:
+    - ERC20
+    - Votes
+
+tags:
+  - name: 読み取り関数
+  - name: エラー
+
+x-tagGroups:
+  - name: 関数
+    tags:
+      - 読み取り関数
+  - name: エラー
+    tags:
+      - エラー
+
+paths:
+  /numCheckpoints:
+    get:
+      summary: "numCheckpoints"
+      description: |
+        指定されたアカウントのチェックポイント数を取得します。
+
+        チェックポイントは、投票権の変更履歴を記録するデータ構造です。
+        各委任や転送により新しいチェックポイントが作成されます。
+      operationId: numCheckpoints
+      tags:
+        - 読み取り関数
+      parameters:
+        - name: account
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^0x[0-9a-fA-F]{40}$"
+          description: "チェックポイント数を確認するアカウントのアドレスを指定します。"
+          example: "0x1234567890123456789012345678901234567890"
+      responses:
+        "200":
+          description: "正常終了時のレスポンスです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result0:
+                    type: string
+                    description: "チェックポイントの数を返します。"
+                    example: "5"
+
+  /checkpoints:
+    get:
+      summary: "checkpoints"
+      description: |
+        指定されたアカウントの指定された位置のチェックポイントを取得します。
+
+        チェックポイントには、特定時点での投票権とブロック番号が含まれます。
+      operationId: checkpoints
+      tags:
+        - 読み取り関数
+      parameters:
+        - name: account
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^0x[0-9a-fA-F]{40}$"
+          description: "チェックポイントを確認するアカウントのアドレスを指定します。"
+          example: "0x1234567890123456789012345678901234567890"
+        - name: pos
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "取得するチェックポイントの位置(インデックス)を指定します。uint32型の数値を文字列で表現します。"
+          example: "0"
+      responses:
+        "200":
+          description: "正常終了時のレスポンスです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result0:
+                    type: object
+                    description: "Checkpoint208構造体を返します。_key(ブロック番号)と_value(投票権)を含みます。"
+
+  /errors/ERC20ExceededSafeSupply:
+    get:
+      summary: "ERC20ExceededSafeSupply"
+      description: |
+        総供給量の上限を超えた時に返されるエラーです。
+
+        ERC20Votesでは、チェックポイントをTrace208構造体に格納するため、総供給量がtype(uint208).max(2^208 - 1)を超えることができません。
+        この制限を超えてmintしようとした場合に発生します。
+
+        **パラメータ:**
+        - `increasedSupply` (uint256): 増加後の総供給量
+        - `cap` (uint256): 最大供給量の上限
+      operationId: error_ERC20ExceededSafeSupply
+      tags:
+        - エラー
+      responses:
+        "200":
+          description: "総供給量の上限を超えた時に返されるエラーです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "ERC20ExceededSafeSupply"
+                  parameters:
+                    type: object
+                    properties:
+                      increasedSupply:
+                        type: string
+                        description: "増加後の総供給量を指定します。"
+                      cap:
+                        type: string
+                        description: "最大供給量の上限を指定します。"
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: "コントラクト呼び出し時のエラー情報を表現する共通スキーマです。"
+      properties:
+        message:
+          type: string
+          description: "カスタムエラー名または `revert` / `require` のメッセージ文字列をそのまま格納します。"
+        data:
+          type: object
+          description: "追加情報(任意)です。"

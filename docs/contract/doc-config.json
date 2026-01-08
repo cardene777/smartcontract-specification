@@ -1,0 +1,23 @@
+{
+  "contracts": [
+    {
+      "name": "ERC20",
+      "category": "Token",
+      "description": "ERC20トークン標準の実装コントラクト",
+      "specPath": "specs/ERC20/ERC20.openapi.yaml",
+      "irPath": "ir/ERC20.json"
+    }
+  ],
+  "categories": [
+    {
+      "id": "Token",
+      "label": "トークン",
+      "description": "ERC20、ERC721などのトークン標準の実装"
+    }
+  ],
+  "language": {
+    "code": "ja",
+    "name": "日本語"
+  },
+  "generatedAt": "2026-01-09T00:00:00Z"
+}

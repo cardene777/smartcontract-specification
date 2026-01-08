@@ -1,0 +1,755 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC20 Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC20 コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。\n\nこのコントラクトは以下のコントラクトを継承しています：\n- Context\n- IERC20\n- IERC20Metadata\n- IERC20Errors"
+  },
+  "host": "example.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "tags": [
+    {
+      "name": "読み取り関数",
+      "description": "ステートを変更せず、コントラクト内の情報を取得する関数。"
+    },
+    {
+      "name": "書き込み関数",
+      "description": "ステートを変更する関数。"
+    },
+    {
+      "name": "変数"
+    },
+    {
+      "name": "Mapping"
+    },
+    {
+      "name": "イベント"
+    },
+    {
+      "name": "エラー"
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "関数",
+      "tags": [
+        "読み取り関数",
+        "書き込み関数"
+      ]
+    },
+    {
+      "name": "変数",
+      "tags": [
+        "変数"
+      ]
+    },
+    {
+      "name": "Mapping",
+      "tags": [
+        "Mapping"
+      ]
+    },
+    {
+      "name": "イベント",
+      "tags": [
+        "イベント"
+      ]
+    },
+    {
+      "name": "エラー",
+      "tags": [
+        "エラー"
+      ]
+    }
+  ],
+  "paths": {
+    "/allowance": {
+      "get": {
+        "summary": "allowance",
+        "description": "spenderがownerから使用を許可されているトークン量を取得します。\n\nERC20標準関数です。",
+        "operationId": "allowance",
+        "tags": [
+          "Mapping"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "許可された残高を返します。"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "所有者のアドレスを指定します。"
+          },
+          {
+            "name": "spender",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "トークンの使用を許可するアドレスを指定します。"
+          }
+        ]
+      }
+    },
+    "/approve": {
+      "post": {
+        "summary": "approve",
+        "description": "spenderが指定された量のトークンを使用することを承認します。\n\nERC20標準関数です。",
+        "operationId": "approve",
+        "tags": [
+          "書き込み関数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "承認が成功した場合trueを返します。"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "この関数で発生しうるエラーの一覧です。<br>・InvalidAddress<br>・AmountZero<br>",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "InvalidAddress",
+                "data": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "spender",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "トークンの使用を許可するアドレスを指定します。"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "値を指定します。"
+          }
+        ]
+      }
+    },
+    "/balanceOf": {
+      "get": {
+        "summary": "balanceOf",
+        "description": "指定されたアカウントのトークン残高を取得します。\n\nERC20標準関数です。",
+        "operationId": "balanceOf",
+        "tags": [
+          "Mapping"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "アカウントの残高を返します。"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "account",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "対象アカウントのアドレスを指定します。"
+          }
+        ]
+      }
+    },
+    "/decimals": {
+      "get": {
+        "summary": "decimals",
+        "description": "トークンの小数点以下の桁数を取得します。\n\nERC20標準関数です。通常は18です。",
+        "operationId": "decimals",
+        "tags": [
+          "変数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "小数点以下の桁数を返します。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/name": {
+      "get": {
+        "summary": "name",
+        "description": "トークンの名前を取得します。\n\nERC20標準関数です。",
+        "operationId": "name",
+        "tags": [
+          "変数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "トークン名を返します。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/symbol": {
+      "get": {
+        "summary": "symbol",
+        "description": "トークンのシンボルを取得します。\n\nERC20標準関数です。",
+        "operationId": "symbol",
+        "tags": [
+          "変数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "トークンシンボルを返します。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/totalSupply": {
+      "get": {
+        "summary": "totalSupply",
+        "description": "トークンの総供給量を取得します。\n\nERC20標準関数です。",
+        "operationId": "totalSupply",
+        "tags": [
+          "変数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "トークンの総供給量を返します。"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfer": {
+      "post": {
+        "summary": "transfer",
+        "description": "指定されたアドレスにトークンを転送します。\n\nERC20標準関数です。",
+        "operationId": "transfer",
+        "tags": [
+          "書き込み関数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "送金が成功した場合trueを返します。"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "この関数で発生しうるエラーの一覧です。<br>・InvalidAddress<br>・AmountZero<br>",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "InvalidAddress",
+                "data": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "送金先のアドレスを指定します。"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "値を指定します。"
+          }
+        ]
+      }
+    },
+    "/transferFrom": {
+      "post": {
+        "summary": "transferFrom",
+        "description": "fromからtoへトークンを転送します。事前にallowanceが設定されている必要があります。\n\nERC20標準関数です。",
+        "operationId": "transferFrom",
+        "tags": [
+          "書き込み関数"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result0": {
+                  "type": "string",
+                  "description": "送金が成功した場合trueを返します。"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "この関数で発生しうるエラーの一覧です。<br>・InvalidAddress<br>・AmountZero<br>",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "message": "InvalidAddress",
+                "data": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "送金元のアドレスを指定します。"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "送金先のアドレスを指定します。"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "値を指定します。"
+          }
+        ]
+      }
+    },
+    "/events/Approval": {
+      "get": {
+        "summary": "Approval",
+        "description": "トークンの使用許可が設定された時に発行されるイベントです。所有者、承認された使用者、および許可量が記録されます。",
+        "operationId": "event_Approval",
+        "tags": [
+          "イベント"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "トークンの使用許可が設定された時に発行されるイベントです。所有者、承認された使用者、および許可量が記録されます。",
+            "schema": {
+              "$ref": "#/definitions/ApprovalEvent"
+            }
+          }
+        }
+      }
+    },
+    "/events/Transfer": {
+      "get": {
+        "summary": "Transfer",
+        "description": "トークンが転送された時に発行されるイベントです。送金元、送金先、および転送量が記録されます。",
+        "operationId": "event_Transfer",
+        "tags": [
+          "イベント"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "トークンが転送された時に発行されるイベントです。送金元、送金先、および転送量が記録されます。",
+            "schema": {
+              "$ref": "#/definitions/TransferEvent"
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InsufficientAllowance": {
+      "get": {
+        "summary": "ERC20InsufficientAllowance",
+        "description": "リソースが不足している時に返されるエラーです。",
+        "operationId": "error_ERC20InsufficientAllowance",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "リソースが不足している時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InsufficientAllowance"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "spender": {
+                      "type": "string",
+                      "description": "トークンの使用を許可するアドレスを指定します。"
+                    },
+                    "allowance": {
+                      "type": "string",
+                      "description": "allowanceを指定します。"
+                    },
+                    "needed": {
+                      "type": "string",
+                      "description": "neededを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InsufficientBalance": {
+      "get": {
+        "summary": "ERC20InsufficientBalance",
+        "description": "リソースが不足している時に返されるエラーです。",
+        "operationId": "error_ERC20InsufficientBalance",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "リソースが不足している時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InsufficientBalance"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sender": {
+                      "type": "string",
+                      "description": "送信者のアドレスを指定します。"
+                    },
+                    "balance": {
+                      "type": "string",
+                      "description": "balanceを指定します。"
+                    },
+                    "needed": {
+                      "type": "string",
+                      "description": "neededを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidApprover": {
+      "get": {
+        "summary": "ERC20InvalidApprover",
+        "description": "無効な値が指定された時に返されるエラーです。",
+        "operationId": "error_ERC20InvalidApprover",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "無効な値が指定された時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InvalidApprover"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "approver": {
+                      "type": "string",
+                      "description": "approverを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidReceiver": {
+      "get": {
+        "summary": "ERC20InvalidReceiver",
+        "description": "無効な値が指定された時に返されるエラーです。",
+        "operationId": "error_ERC20InvalidReceiver",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "無効な値が指定された時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InvalidReceiver"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "receiver": {
+                      "type": "string",
+                      "description": "receiverを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidSender": {
+      "get": {
+        "summary": "ERC20InvalidSender",
+        "description": "無効な値が指定された時に返されるエラーです。",
+        "operationId": "error_ERC20InvalidSender",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "無効な値が指定された時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InvalidSender"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "sender": {
+                      "type": "string",
+                      "description": "送信者のアドレスを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/ERC20InvalidSpender": {
+      "get": {
+        "summary": "ERC20InvalidSpender",
+        "description": "無効な値が指定された時に返されるエラーです。",
+        "operationId": "error_ERC20InvalidSpender",
+        "tags": [
+          "エラー"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "無効な値が指定された時に返されるエラーです。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "ERC20InvalidSpender"
+                },
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "spender": {
+                      "type": "string",
+                      "description": "トークンの使用を許可するアドレスを指定します。"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "description": "コントラクト呼び出し時のエラー情報を表現する共通スキーマです。",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "カスタムエラー名または `revert` / `require` のメッセージ文字列をそのまま格納します。"
+        },
+        "data": {
+          "type": "object",
+          "description": "追加情報（任意）です。"
+        }
+      }
+    },
+    "ApprovalEvent": {
+      "type": "object",
+      "description": "Approval",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": "インデックス付き。所有者のアドレスを指定します。"
+        },
+        "spender": {
+          "type": "string",
+          "description": "インデックス付き。トークンの使用を許可するアドレスを指定します。"
+        },
+        "value": {
+          "type": "string",
+          "description": "値を指定します。"
+        }
+      }
+    },
+    "TransferEvent": {
+      "type": "object",
+      "description": "Transfer",
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "インデックス付き。送金元のアドレスを指定します。"
+        },
+        "to": {
+          "type": "string",
+          "description": "インデックス付き。送金先のアドレスを指定します。"
+        },
+        "value": {
+          "type": "string",
+          "description": "値を指定します。"
+        }
+      }
+    }
+  }
+}

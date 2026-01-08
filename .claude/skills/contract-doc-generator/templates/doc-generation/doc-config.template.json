@@ -1,0 +1,162 @@
+{
+  "specsDir": "{OUTPUT_DIR}/contract",
+  "outputDir": "{OUTPUT_DIR}/site/docs/contracts",
+  "overviewOutputDir": "{OUTPUT_DIR}/site/docs/overview",
+  "sidebarPath": "{OUTPUT_DIR}/site/sidebars.js",
+  "categories": {
+    "Core Contracts": ["MyToken", "MyTokenProxy"],
+    "Access Control": ["Ownable", "AccessControl"],
+    "Extensions": ["Pausable", "Mintable"]
+  },
+  "descriptions": {
+    "MyToken": {
+      "overview": "ERC20トークンの基本実装です。",
+      "detail": "このコントラクトは標準的なERC20トークン機能を提供し、Mintable拡張により権限を持つアカウントが新規トークンを発行できます。プロキシパターンに対応しており、アップグレード可能な設計となっています。",
+      "features": [
+        {
+          "title": "トークン転送",
+          "description": "標準的なERC20転送機能（transfer、transferFrom）を提供します。承認メカニズム（approve）により、他のアカウントやコントラクトが代理で転送を実行できます。",
+          "sequence": "sequenceDiagram\n    participant User\n    participant Token\n    User->>Token: transfer(to, amount)\n    Token->>Token: _transfer(from, to, amount)\n    Token-->>User: success"
+        },
+        {
+          "title": "トークン発行",
+          "description": "MINTER_ROLEを持つアカウントが新規トークンを発行できます。発行上限のチェックも行われます。",
+          "sequence": "sequenceDiagram\n    participant Minter\n    participant Token\n    Minter->>Token: mint(to, amount)\n    Token->>Token: _checkRole(MINTER_ROLE)\n    Token->>Token: _mint(to, amount)\n    Token-->>Minter: success"
+        }
+      ],
+      "security": "トークン発行はMINTER_ROLEによって制限されています。ロール管理には十分注意してください。"
+    },
+    "MyTokenProxy": {
+      "overview": "UUPSパターンを使用したプロキシコントラクトです。",
+      "detail": "Universal Upgradeable Proxy Standard (UUPS) パターンを採用し、実装コントラクトのアップグレードを可能にします。ストレージはプロキシ側に保持され、ロジックのみを更新できます。",
+      "features": [
+        {
+          "title": "アップグレード機能",
+          "description": "UPGRADER_ROLEを持つアカウントが実装コントラクトを更新できます。ストレージレイアウトの互換性を保ちながらロジックを変更可能です。",
+          "sequence": "sequenceDiagram\n    participant Admin\n    participant Proxy\n    participant NewImpl\n    Admin->>Proxy: upgradeTo(newImpl)\n    Proxy->>Proxy: _authorizeUpgrade()\n    Proxy->>Proxy: _setImplementation(newImpl)\n    Proxy-->>Admin: success"
+        }
+      ]
+    }
+  },
+  "overview": {
+    "glossary": {
+      "sections": [
+        {
+          "name": "トークン関連",
+          "terms": [
+            {
+              "name": "ERC20",
+              "description": "Ethereum上の標準的なトークン規格。transfer、approve、transferFromなどの基本的なインターフェースを定義します。"
+            },
+            {
+              "name": "Mint",
+              "description": "新規トークンの発行。総供給量が増加します。"
+            },
+            {
+              "name": "Burn",
+              "description": "トークンの焼却。総供給量が減少します。"
+            }
+          ]
+        },
+        {
+          "name": "ロール関連",
+          "terms": [
+            {
+              "name": "MINTER_ROLE",
+              "description": "トークンを発行する権限を持つロール。"
+            },
+            {
+              "name": "PAUSER_ROLE",
+              "description": "システムを一時停止する権限を持つロール。"
+            },
+            {
+              "name": "UPGRADER_ROLE",
+              "description": "コントラクトをアップグレードする権限を持つロール。"
+            }
+          ]
+        }
+      ]
+    },
+    "architecture": {
+      "overview": "このシステムはUUPSプロキシパターンを採用したアップグレード可能なERC20トークンシステムです。",
+      "diagram": "```mermaid\ngraph TB\n    Proxy[Proxy Contract]\n    Core[Core Contract]\n    Storage[Storage Contract]\n    \n    Proxy --> Core\n    Core --> Storage\n```",
+      "components": [
+        {
+          "name": "Proxy",
+          "description": "UUPSパターンのプロキシ。全ての呼び出しを実装コントラクトに転送します。"
+        },
+        {
+          "name": "Core",
+          "description": "ERC20トークンの中核ロジック。ビジネスロジックを実装します。"
+        },
+        {
+          "name": "Storage",
+          "description": "状態変数を管理。アップグレード時の互換性を保証します。"
+        }
+      ],
+      "relationships": "```mermaid\nclassDiagram\n    Proxy --|> Core\n    Core --|> Storage\n```"
+    },
+    "roles": {
+      "list": [
+        {
+          "name": "DEFAULT_ADMIN_ROLE",
+          "description": "管理者ロール",
+          "permissions": ["全ての操作", "ロールの付与・剥奪"]
+        },
+        {
+          "name": "MINTER_ROLE",
+          "description": "発行者ロール",
+          "permissions": ["トークン発行"]
+        },
+        {
+          "name": "PAUSER_ROLE",
+          "description": "一時停止者ロール",
+          "permissions": ["システムの一時停止"]
+        },
+        {
+          "name": "UPGRADER_ROLE",
+          "description": "アップグレード実行者ロール",
+          "permissions": ["コントラクトのアップグレード"]
+        }
+      ],
+      "hierarchy": "```mermaid\ngraph TB\n    Admin[DEFAULT_ADMIN_ROLE]\n    Minter[MINTER_ROLE]\n    Pauser[PAUSER_ROLE]\n    Upgrader[UPGRADER_ROLE]\n    \n    Admin --> Minter\n    Admin --> Pauser\n    Admin --> Upgrader\n```",
+      "grantFlow": "```mermaid\nsequenceDiagram\n    participant Admin\n    participant Contract\n    Admin->>Contract: grantRole(MINTER_ROLE, account)\n    Contract->>Contract: _checkRole(DEFAULT_ADMIN_ROLE)\n    Contract->>Contract: _grantRole(MINTER_ROLE, account)\n    Contract-->>Admin: success\n```"
+    },
+    "stateTransitions": {
+      "tokenLifecycle": "## トークンのライフサイクル\n\n```mermaid\nstateDiagram-v2\n    [*] --> Minted: mint()\n    Minted --> Transferred: transfer()\n    Transferred --> Burned: burn()\n    Burned --> [*]\n```",
+      "systemStates": "## システムの状態\n\n```mermaid\nstateDiagram-v2\n    [*] --> Active\n    Active --> Paused: pause()\n    Paused --> Active: unpause()\n```"
+    },
+    "upgrade": {
+      "process": "UUPSパターンによるアップグレード手順を説明します。アップグレード時は、ストレージレイアウトの互換性を保つ必要があります。",
+      "diagram": "```mermaid\nsequenceDiagram\n    participant Admin\n    participant Proxy\n    participant OldImpl\n    participant NewImpl\n    \n    Admin->>Proxy: upgradeTo(newImpl)\n    Proxy->>OldImpl: _authorizeUpgrade()\n    OldImpl->>OldImpl: _checkRole(UPGRADER_ROLE)\n    Proxy->>Proxy: _setImplementation(newImpl)\n    Proxy-->>Admin: success\n```",
+      "storageNotes": "アップグレード時は以下の点に注意してください：\n\n- 既存の状態変数の順序を変更しない\n- 新しい状態変数は必ず末尾に追加\n- 状態変数の型を変更しない\n- ストレージギャップを活用して将来の拡張に備える"
+    },
+    "testing": {
+      "structure": "- **単体テスト**: 各関数の動作を検証\n- **統合テスト**: コントラクト間の連携を検証\n- **E2Eテスト**: エンドツーエンドのシナリオを検証",
+      "coverage": {
+        "line": "95%",
+        "branch": "90%",
+        "function": "100%"
+      },
+      "commands": "```bash\n# テスト実行\nforge test\n\n# カバレッジ計測\nforge coverage\n\n# ガスレポート\nforge test --gas-report\n```"
+    },
+    "audit": {
+      "history": [
+        {
+          "date": "2024-01-01",
+          "auditor": "Example Security",
+          "result": "重大な問題なし"
+        }
+      ],
+      "issues": [
+        {
+          "id": "1",
+          "title": "再入攻撃の可能性",
+          "severity": "High",
+          "status": "修正済み",
+          "response": "ReentrancyGuardを追加して対応しました。"
+        }
+      ]
+    }
+  }
+}

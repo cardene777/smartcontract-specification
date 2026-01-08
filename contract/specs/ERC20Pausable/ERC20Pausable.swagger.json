@@ -1,0 +1,22 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC20Pausable Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC20Pausable コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/paused": {
+      "get": {
+        "summary": "paused",
+        "description": "コントラクトが一時停止状態かどうかを確認します。",
+        "operationId": "paused",
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。"
+          }
+        }
+      }
+    }
+  }
+}

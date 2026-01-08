@@ -1,0 +1,24 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC20Votes Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC20Votes コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/numCheckpoints": {
+      "get": {
+        "summary": "numCheckpoints",
+        "description": "指定されたアカウントのチェックポイント数を取得します。",
+        "operationId": "numCheckpoints"
+      }
+    },
+    "/checkpoints": {
+      "get": {
+        "summary": "checkpoints",
+        "description": "指定されたアカウントの指定された位置のチェックポイントを取得します。",
+        "operationId": "checkpoints"
+      }
+    }
+  }
+}

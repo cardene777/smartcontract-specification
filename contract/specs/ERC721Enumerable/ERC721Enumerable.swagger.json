@@ -1,0 +1,31 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC721Enumerable Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC721Enumerable コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/tokenOfOwnerByIndex": {
+      "get": {
+        "summary": "tokenOfOwnerByIndex",
+        "description": "指定されたownerが所有する、指定されたindexのトークンIDを取得します。",
+        "operationId": "tokenOfOwnerByIndex"
+      }
+    },
+    "/totalSupply": {
+      "get": {
+        "summary": "totalSupply",
+        "description": "コントラクト内の総トークン数を取得します。",
+        "operationId": "totalSupply"
+      }
+    },
+    "/tokenByIndex": {
+      "get": {
+        "summary": "tokenByIndex",
+        "description": "グローバルインデックスから、指定されたindexのトークンIDを取得します。",
+        "operationId": "tokenByIndex"
+      }
+    }
+  }
+}

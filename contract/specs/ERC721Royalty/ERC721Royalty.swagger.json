@@ -1,0 +1,17 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC721Royalty Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC721Royalty コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/royaltyInfo": {
+      "get": {
+        "summary": "royaltyInfo",
+        "description": "指定されたtokenIdと販売価格に基づいて、ロイヤリティ情報を取得します。",
+        "operationId": "royaltyInfo"
+      }
+    }
+  }
+}

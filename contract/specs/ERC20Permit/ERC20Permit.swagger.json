@@ -1,0 +1,101 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC20Permit Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC20Permit コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/permit": {
+      "post": {
+        "summary": "permit",
+        "description": "署名を使用してallowanceを設定します。",
+        "operationId": "permit",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "spender",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deadline",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "v",
+            "in": "query",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "r",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "s",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。"
+          },
+          "500": {
+            "description": "エラーが発生した場合のレスポンスです。"
+          }
+        }
+      }
+    },
+    "/nonces": {
+      "get": {
+        "summary": "nonces",
+        "description": "指定されたownerの現在のnonceを取得します。",
+        "operationId": "nonces",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。"
+          }
+        }
+      }
+    },
+    "/DOMAIN_SEPARATOR": {
+      "get": {
+        "summary": "DOMAIN_SEPARATOR",
+        "description": "EIP-712ドメインセパレータを取得します。",
+        "operationId": "DOMAIN_SEPARATOR",
+        "responses": {
+          "200": {
+            "description": "正常終了時のレスポンスです。"
+          }
+        }
+      }
+    }
+  }
+}

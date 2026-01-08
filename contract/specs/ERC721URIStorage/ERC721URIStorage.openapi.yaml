@@ -1,0 +1,117 @@
+# file: docs/contract/specs/ERC721URIStorage/ERC721URIStorage.openapi.yaml
+
+openapi: 3.0.3
+info:
+  title: "ERC721URIStorage Solidity Interface"
+  version: "1.0.0"
+  description: |
+    ERC721URIStorage コントラクトの Solidity インターフェイスを OpenAPI 形式で表現した仕様です。
+
+    このコントラクトは、トークンごとに個別のURIを保存できる機能を提供するERC721の拡張です。
+    ストレージベースのトークンURI管理を実装しており、各トークンに一意のメタデータURIを設定できます。
+
+    このコントラクトは以下のコントラクトを継承しています:
+    - IERC4906
+    - ERC721
+
+tags:
+  - name: 読み取り関数
+  - name: イベント
+
+x-tagGroups:
+  - name: 関数
+    tags:
+      - 読み取り関数
+  - name: イベント
+    tags:
+      - イベント
+
+paths:
+  /tokenURI:
+    get:
+      summary: "tokenURI"
+      description: |
+        指定されたtokenIdのメタデータURIを取得します。
+
+        この実装は、個別に設定されたトークンURIとベースURIを組み合わせます。
+        個別URIが設定されていない場合は、基底クラスのtokenURI実装にフォールバックします。
+      operationId: tokenURI
+      tags:
+        - 読み取り関数
+      parameters:
+        - name: tokenId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "メタデータURIを確認するトークンIDを指定します。uint256型の数値を文字列で表現します。"
+          example: "1"
+      responses:
+        "200":
+          description: "正常終了時のレスポンスです。"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result0:
+                    type: string
+                    description: "トークンのメタデータURIを返します。ベースURIと個別URIが結合される場合があります。"
+                    example: "https://example.com/metadata/custom-uri-1"
+        "500":
+          description: "この関数で発生しうるエラーの一覧です。<br>・ERC721NonexistentToken: tokenIdが存在しない場合<br>"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ERC721NonexistentToken:
+                  summary: 存在しないトークン
+                  value:
+                    error: ERC721NonexistentToken
+                    message: "ERC-721: invalid token ID"
+                    details: "Token ID does not exist"
+
+  /events/MetadataUpdate:
+    get:
+      summary: "MetadataUpdate"
+      description: |
+        トークンのメタデータが更新された時に発行されるイベントです。
+
+        _setTokenURI関数が呼び出されると、このイベントが発行されます。
+        EIP-4906(ERC-721 Metadata Update Extension)で定義されています。
+
+        **パラメータ:**
+        - `tokenId` (uint256): メタデータが更新されたトークンID
+      operationId: event_MetadataUpdate
+      tags:
+        - イベント
+      responses:
+        "200":
+          description: "トークンのメタデータが更新された時に発行されるイベントです。"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataUpdateEvent'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: "コントラクト呼び出し時のエラー情報を表現する共通スキーマです。"
+      properties:
+        message:
+          type: string
+          description: "カスタムエラー名または `revert` / `require` のメッセージ文字列をそのまま格納します。"
+        data:
+          type: object
+          description: "追加情報(任意)です。"
+
+    MetadataUpdateEvent:
+      type: object
+      description: "MetadataUpdate"
+      properties:
+        tokenId:
+          type: string
+          description: "メタデータが更新されたトークンIDを指定します。"
+          example: "1"

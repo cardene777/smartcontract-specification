@@ -1,0 +1,59 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ERC721 Solidity Interface",
+    "version": "1.0.0",
+    "description": "ERC721 コントラクトの Solidity インターフェイスを Swagger 2.0 形式で表現した仕様です。"
+  },
+  "paths": {
+    "/balanceOf": {
+      "get": {
+        "summary": "balanceOf",
+        "description": "指定されたアドレスが所有するNFTの数を取得します。",
+        "operationId": "balanceOf"
+      }
+    },
+    "/ownerOf": {
+      "get": {
+        "summary": "ownerOf",
+        "description": "指定されたtokenIdの所有者を取得します。",
+        "operationId": "ownerOf"
+      }
+    },
+    "/name": {
+      "get": {
+        "summary": "name",
+        "description": "NFTコレクションの名前を取得します。",
+        "operationId": "name"
+      }
+    },
+    "/symbol": {
+      "get": {
+        "summary": "symbol",
+        "description": "NFTコレクションのシンボルを取得します。",
+        "operationId": "symbol"
+      }
+    },
+    "/tokenURI": {
+      "get": {
+        "summary": "tokenURI",
+        "description": "指定されたtokenIdのメタデータURIを取得します。",
+        "operationId": "tokenURI"
+      }
+    },
+    "/approve": {
+      "post": {
+        "summary": "approve",
+        "description": "指定されたアドレスに特定のtokenIdの転送承認を与えます。",
+        "operationId": "approve"
+      }
+    },
+    "/transferFrom": {
+      "post": {
+        "summary": "transferFrom",
+        "description": "fromからtoへtokenIdを転送します。",
+        "operationId": "transferFrom"
+      }
+    }
+  }
+}

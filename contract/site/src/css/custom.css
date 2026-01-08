@@ -1,0 +1,149 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+/* Custom Color Scheme - Warm & Elegant */
+:root {
+  /* ライトモード: 温かく優雅な配色 */
+  --color-background: #f9f4ef;
+  --color-headline: #020826;
+  --color-paragraph: #716040;
+  --color-button: #8c7851;
+  --color-button-text: #fffffe;
+  --color-stroke: #020826;
+  --color-main: #fffffe;
+  --color-highlight: #8c7851;
+  --color-secondary: #eaddcf;
+  --color-tertiary: #f25042;
+
+  --ifm-color-primary: #8c7851;
+  --ifm-color-primary-dark: #7a6746;
+  --ifm-color-primary-darker: #6e5d40;
+  --ifm-color-primary-darkest: #5a4d35;
+  --ifm-color-primary-light: #9e895c;
+  --ifm-color-primary-lighter: #a99567;
+  --ifm-color-primary-lightest: #c4b084;
+  --ifm-code-font-size: 95%;
+
+  --ifm-background-color: #fdfcfa;
+  --ifm-background-surface-color: #fffffe;
+  --ifm-navbar-background-color: rgba(255, 255, 254, 0.98);
+  --ifm-footer-background-color: #fdfcfa;
+  --ifm-font-color-base: #716040;
+
+  /* タイポグラフィ */
+  --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-line-height-base: 1.7;
+}
+
+/* Dark mode - 温かみのあるダークテーマ */
+html[data-theme='dark'] {
+  /* ダークモード: リッチで温かい配色 */
+  --color-background: #55423d;
+  --color-headline: #fffffe;
+  --color-paragraph: #fff3ec;
+  --color-button: #ffc0ad;
+  --color-button-text: #271c19;
+  --color-stroke: #140d0b;
+  --color-main: #fff3ec;
+  --color-highlight: #e78fb3;
+  --color-secondary: #ffc0ad;
+  --color-tertiary: #9656a1;
+
+  --ifm-color-primary: #ffc0ad;
+  --ifm-color-primary-dark: #ffad94;
+  --ifm-color-primary-darker: #ffa489;
+  --ifm-color-primary-darkest: #ff8964;
+  --ifm-color-primary-light: #ffd3c6;
+  --ifm-color-primary-lighter: #ffdcd1;
+  --ifm-color-primary-lightest: #fff3ef;
+
+  --ifm-background-color: #55423d;
+  --ifm-background-surface-color: #6b5650;
+  --ifm-navbar-background-color: rgba(85, 66, 61, 0.98);
+  --ifm-footer-background-color: #483632;
+  --ifm-font-color-base: #fff3ec;
+
+  --color-border: #7d6760;
+}
+
+/* ナビゲーションバーのモダン化 */
+.navbar {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme='dark'] .navbar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid #7d6760;
+}
+
+/* カードのエレガントなデザイン */
+.card {
+  border: 1px solid #eaddcf;
+  box-shadow: 0 2px 8px rgba(140, 120, 81, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fffffe;
+  border-radius: 8px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(140, 120, 81, 0.15);
+  border-color: #8c7851;
+}
+
+html[data-theme='dark'] .card {
+  background: #6b5650;
+  border: 1px solid #7d6760;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme='dark'] .card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-color: #ffc0ad;
+}
+
+/* ボタンのエレガントなデザイン */
+.button--primary {
+  background: #8c7851;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  color: #fffffe;
+}
+
+.button--primary:hover {
+  background: #7a6746;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(140, 120, 81, 0.3);
+  color: #fffffe;
+}
+
+html[data-theme='dark'] .button--primary {
+  background: #ffc0ad;
+  color: #271c19;
+}
+
+html[data-theme='dark'] .button--primary:hover {
+  background: #ffad94;
+  box-shadow: 0 4px 12px rgba(255, 192, 173, 0.4);
+  color: #271c19;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+html[data-theme='dark'] .docusaurus-highlight-code-line {
+  background-color: rgba(0, 0, 0, 0.3);
+}
